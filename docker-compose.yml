@@ -1,6 +1,7 @@
+# THIS DOCKERFILE IS ONLY INTENDED FOR TESTING
 version: '3.7'
 services:
-  webapp:
+  server:
     build:
       context: .
       dockerfile: Dockerfile
