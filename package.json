@@ -8,7 +8,7 @@
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "webpack",
     "prestart": "npm run build",
-    "start": "node .",
+    "start": "docker-compose up",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "husky": {
