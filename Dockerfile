@@ -4,7 +4,7 @@ ADD . /dist
 workdir ./dist
 
 # SET PORT AND EXPOSE
-ARG PORT
+ARG PORT=5000
 ENV PORT $PORT
 EXPOSE $PORT
 
