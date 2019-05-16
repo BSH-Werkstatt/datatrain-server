@@ -1,5 +1,5 @@
 import express from 'express';
-import RunPython from './RunPython';
+import RunPython from './runPython';
 
 const app = express();
 const port = 8080; // default port to listen
