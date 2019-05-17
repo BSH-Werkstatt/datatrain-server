@@ -1,12 +1,23 @@
 import express from 'express';
+import RunPython from './runPython';
 
 const app = express();
 const port = process.env.PORT;
 
 // define a route handler for the default home page
 app.get('/', (req, res) => {
-  res.send('Hello world!');
   console.log('Someone connected.');
+
+  const python = new RunPython('./src/demo.py', 'This is a message from index.js');
+  python.getPromise().then(
+    (data: string) => {
+      console.log(data.toString());
+      res.send('Hello World! ' + data.toString());
+    },
+    (error: Error) => {
+      console.log(error);
+    }
+  );
 });
 
 // start the Express server
