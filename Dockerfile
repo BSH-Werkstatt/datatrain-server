@@ -1,7 +1,7 @@
 FROM node
 
-ADD . /dist
-workdir ./dist
+COPY . /dist
+WORKDIR ./dist
 
 # SET PORT AND EXPOSE
 ARG PORT=5000
