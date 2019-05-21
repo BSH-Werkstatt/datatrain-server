@@ -5,7 +5,7 @@ import path from 'path';
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.get('/', express.static(path.join(__dirname, 'dist/bsh-gotcha')));
+app.use(express.static(path.join(__dirname, 'dist/bsh-gotcha')));
 
 // define a route handler for the default home page
 app.get('/api/python', (req, res) => {
