@@ -1,15 +1,16 @@
 FROM node
 
-COPY package.json .
 
-RUN npm i -g yarn
+
+COPY package.json .
 
 RUN yarn install --prod
 
+
 COPY dist .
+RUN ls dist
+WORKDIR /dist
 
-
-RUN ls
 
 # SET PORT AND EXPOSE
 ARG PORT=5000
