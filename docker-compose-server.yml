@@ -8,6 +8,8 @@ services:
     command: --interval 30
   app_prod:
     image: dockerhub.ase.in.tum.de:5043/ios19bsh/api:master
+    environment:
+      PORT: 5000
     ports:
       - 5000:5000
   database_prod:
@@ -20,6 +22,8 @@ services:
       - app_prod
   app_dev:
     image: tagged dockerhub.ase.in.tum.de:5043/ios19bsh/api:dev
+    environment:
+      PORT: 5001
     ports:
       - 5001:5001
   database_dev:
