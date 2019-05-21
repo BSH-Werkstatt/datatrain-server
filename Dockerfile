@@ -1,5 +1,7 @@
 FROM node
 
+RUN mkdir /app && chown node:node /app
+WORKDIR /app
 
 
 COPY package.json .
@@ -7,9 +9,10 @@ COPY package.json .
 RUN yarn install --prod
 
 
+
 COPY dist .
-RUN ls dist
-WORKDIR /dist
+RUN ls
+
 
 
 # SET PORT AND EXPOSE
