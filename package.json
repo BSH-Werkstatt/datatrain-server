@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
-    "build": "rm -r dist && tsc",
+    "build": "rimraf dist && tsc",
     "prestart": "npm run build",
     "start": "docker-compose build && docker-compose up",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -33,6 +33,7 @@
     "husky": "^2.3.0",
     "prettier": "^1.17.1",
     "pretty-quick": "^1.10.0",
+    "rimraf": "^2.6.3",
     "ts-loader": "^6.0.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
