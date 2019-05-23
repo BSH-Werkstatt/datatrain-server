@@ -1,17 +1,11 @@
-import express from 'express';
-import path from 'path';
+import 'reflect-metadata'; // this shim is required
+import { createExpressServer } from 'routing-controllers';
+import { MainController } from './controller/main-controller';
 
-const app = express();
 const port = process.env.PORT || 5000;
 
-// define a route handler for the default home page
-app.get('', (req, res) => {
-  console.log('Someone connected.');
-
-  res.send('Hello World!');
+const app = createExpressServer({
+  controllers: [MainController] // we specify controllers we want to use
 });
 
-// start the Express server
-app.listen(port, () => {
-  console.log(`server started at http://localhost:${port}`);
-});
+app.listen(port);
