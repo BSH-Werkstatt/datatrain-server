@@ -1,7 +1,9 @@
 # THIS DOCKERFILE IS ONLY INTENDED FOR TESTING
 version: '3.7'
+networks:
+  docker-network:
 services:
-  server:
+  backend_dev:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,3 +11,13 @@ services:
         PORT: 5000
     ports:
       - '5000:5000'
+  database_dev:
+    image: mongo
+    links:
+      - backend_dev
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: init12345
+    networks:
+      - docker-network
