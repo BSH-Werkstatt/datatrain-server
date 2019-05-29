@@ -7,7 +7,8 @@ WORKDIR /app
 COPY package.json .
 
 RUN yarn install --prod
-
+RUN yarn global add swagger
+RUN yarn global add tsoa
 
 
 COPY dist .
