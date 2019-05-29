@@ -32,6 +32,8 @@
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.0",
     "routing-controllers": "^0.7.7",
+    "swagger": "^0.7.5",
+    "tsoa": "^2.3.81",
     "typedi": "^0.8.0"
   },
   "devDependencies": {
