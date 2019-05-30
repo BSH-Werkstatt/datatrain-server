@@ -1,5 +1,7 @@
-import { Get, Route, Query, Controller } from 'tsoa';
+import { Get, Route, Post, Controller, Response, Request } from 'tsoa';
+import express from 'express';
 
+import { Image } from '../models/image';
 import { Campaign } from '../models/campaign';
 import { CampaignService } from '../services/CampaignService';
 
@@ -13,5 +15,10 @@ export class CampaignsController extends Controller {
   @Get('')
   public async getAllCampaigns(): Promise<Campaign[]> {
     return await new CampaignService().getAll();
+  }
+
+  @Post('{id}/images')
+  public async postImage(id: number, @Request() request: express.Request): Promise<Image> {
+    return await new CampaignService().uploadImage(id, request);
   }
 }
