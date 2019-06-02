@@ -18,8 +18,6 @@ export class CampaignsController extends Controller {
   }
 
   @Post('{id}/images')
-  @SuccessResponse('204', 'successful')
-  @Response('400', 'invalid file supplied')
   public async postImage(id: number, @Request() request: express.Request): Promise<ImageData> {
     return await new CampaignService().uploadImage(id, request);
   }
