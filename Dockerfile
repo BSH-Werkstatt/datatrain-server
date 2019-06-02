@@ -1,11 +1,19 @@
 FROM node
 
-ADD . /dist
-workdir ./dist
+RUN mkdir /app && chown node:node /app
+WORKDIR /app
 
-# SET PORT AND EXPOSE
-ARG PORT=5000
-ENV PORT $PORT
-EXPOSE $PORT
 
-CMD ["node", "."]
+COPY package.json .
+
+RUN yarn install --prod
+RUN yarn global add swagger
+RUN yarn global add tsoa
+
+
+COPY dist .
+RUN ls
+
+
+
+CMD ["node", "index.js"]

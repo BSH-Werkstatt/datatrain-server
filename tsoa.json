@@ -1,0 +1,13 @@
+{
+  "swagger": {
+    "outputDirectory": "./dist",
+    "entryFile": "./src/index.ts",
+    "host": "http://ios19bsh.ase.in.tum.de/dev/api",
+    "basePath": "/docs"
+  },
+  "routes": {
+    "basePath": "/",
+    "entryFile": "./src/index.ts",
+    "routesDir": "./src"
+  }
+}
