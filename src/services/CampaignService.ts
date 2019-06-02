@@ -71,7 +71,7 @@ export class CampaignService {
     const storage = multer.diskStorage({
       // passing directory as a string means multer will take care of creating it
       // TODO: directory in a constant
-      destination: 'dist/uploads/' + campaignId + '/',
+      destination: __dirname + '/../uploads/' + campaignId + '/',
       filename: (req, file, callback) => {
         const filename = file.originalname;
         const ext = path.extname(filename);
