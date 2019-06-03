@@ -7,9 +7,12 @@ import { CampaignService } from '../services/CampaignService';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
-  @Get('{id}')
-  public async getCampaign(id: number): Promise<Campaign> {
-    return await new CampaignService().get(id);
+  /**
+   * @isInt campaignId
+   */
+  @Get('{campaignId}')
+  public async getCampaign(campaignId: number): Promise<Campaign> {
+    return await new CampaignService().get(campaignId);
   }
 
   @Get('')
@@ -17,13 +20,32 @@ export class CampaignsController extends Controller {
     return await new CampaignService().getAll();
   }
 
-  @Post('{id}/images')
-  public async postImage(id: number, @Request() request: express.Request): Promise<ImageData> {
-    return await new CampaignService().uploadImage(id, request);
+  /**
+   * @isInt campaignId
+   */
+  @Post('{campaignId}/images')
+  public async postImage(campaignId: number, @Request() request: express.Request): Promise<ImageData> {
+    return await new CampaignService().uploadImage(campaignId, request);
   }
 
+  /**
+   * @isInt campaignId
+   */
   @Get('{campaignId}/images/random')
   public async getRandomImage(campaignId: number): Promise<ImageData> {
     return await new CampaignService().getRandomImage(campaignId);
+  }
+
+  /**
+   * @isInt campaignId
+   * @isInt imageId
+   */
+  @Post('{campaignId}/images/{imageId}/annotations')
+  public async postImageAnnotation(
+    campaignId: number,
+    imageId: number,
+    @Request() request: express.Request
+  ): Promise<ImageData> {
+    return await new CampaignService().uploadAnnotation(campaignId, imageId, request);
   }
 }

@@ -1,5 +1,7 @@
 import { Campaign, CampaignType } from '../models/campaign';
 import { ImageData } from '../models/image';
+import { Annotation } from '../models/annotation';
+
 // TODO: Implement with abstract Data and choose type of data depending on Campaign, not directly with Image
 import express from 'express';
 import multer from 'multer';
@@ -13,8 +15,7 @@ const campaignDummy: Campaign[] = [
     type: CampaignType.ImageAnnotationCampaign,
     name: 'Banana Campaign',
     description: 'Lorem Ipsum banana sit amet',
-    vocabulary: ['banana', 'not_banana'],
-    userIds: [1, 2, 3]
+    vocabulary: ['banana', 'not_banana']
   },
   {
     ownerId: 2,
@@ -22,8 +23,7 @@ const campaignDummy: Campaign[] = [
     type: CampaignType.ImageAnnotationCampaign,
     name: 'Dishwasher Campaign',
     description: 'Lorem Ipsum dishwasher sit amet',
-    vocabulary: ['plate', 'fork', 'mug', 'bowl'],
-    userIds: [1, 2, 3]
+    vocabulary: ['plate', 'fork', 'mug', 'bowl']
   }
 ];
 
@@ -154,5 +154,21 @@ export class CampaignService {
     } else {
       return [];
     }
+  }
+
+  /**
+   * Saves the uploaded annotation to the database
+   * Returns a Promise with an Annotation response describing uploaded the annotation or an error
+   * @param campaignId Identifier of the campaign to which the annotation belongs to
+   * @param imageId Identifier of the image to which the annotation belongs to
+   * @param request Express request with the rest of the form data (user etc.)
+   */
+  uploadAnnotation(campaignId: number, imageId: number, request: express.Request): Promise<Annotation> {
+    return new Promise((resolve, reject) => {
+      const annotation: Annotation = {
+        id: 0
+      };
+      resolve(annotation);
+    });
   }
 }
