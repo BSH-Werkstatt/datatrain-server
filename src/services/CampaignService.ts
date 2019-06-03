@@ -134,6 +134,8 @@ export class CampaignService {
         annotations: []
       };
 
+      // TODO: store in database
+
       resolve(image);
     });
   }
@@ -164,7 +166,6 @@ export class CampaignService {
    * @param request Express request with the rest of the form data (user etc.)
    */
   uploadAnnotation(campaignId: number, imageId: number, request: AnnotationCreationRequest): Promise<Annotation> {
-    // TODO Post Body
     return new Promise((resolve, reject) => {
       const annotation: Annotation = {
         id: this.getNextAnnotationId(),
@@ -175,6 +176,9 @@ export class CampaignService {
         campaignId,
         imageId
       };
+
+      // TODO: transform for database and store with image
+
       resolve(annotation);
     });
   }
