@@ -1,9 +1,10 @@
-import { Get, Route, Post, Controller, Response, SuccessResponse, Request } from 'tsoa';
+import { Get, Route, Post, Controller, Request, Body } from 'tsoa';
 import express from 'express';
 
 import { ImageData } from '../models/image';
 import { Campaign } from '../models/campaign';
 import { CampaignService } from '../services/CampaignService';
+import { AnnotationCreationRequest, Annotation } from '../models/annotation';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
@@ -44,8 +45,8 @@ export class CampaignsController extends Controller {
   public async postImageAnnotation(
     campaignId: number,
     imageId: number,
-    @Request() request: express.Request
-  ): Promise<ImageData> {
+    @Body() request: AnnotationCreationRequest
+  ): Promise<Annotation> {
     return await new CampaignService().uploadAnnotation(campaignId, imageId, request);
   }
 }

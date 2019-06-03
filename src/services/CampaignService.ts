@@ -1,6 +1,6 @@
 import { Campaign, CampaignType } from '../models/campaign';
 import { ImageData } from '../models/image';
-import { Annotation } from '../models/annotation';
+import { Annotation, AnnotationCreationRequest } from '../models/annotation';
 
 // TODO: Implement with abstract Data and choose type of data depending on Campaign, not directly with Image
 import express from 'express';
@@ -163,12 +163,27 @@ export class CampaignService {
    * @param imageId Identifier of the image to which the annotation belongs to
    * @param request Express request with the rest of the form data (user etc.)
    */
-  uploadAnnotation(campaignId: number, imageId: number, request: express.Request): Promise<Annotation> {
+  uploadAnnotation(campaignId: number, imageId: number, request: AnnotationCreationRequest): Promise<Annotation> {
+    // TODO Post Body
     return new Promise((resolve, reject) => {
       const annotation: Annotation = {
-        id: 0
+        id: this.getNextAnnotationId(),
+        points: request.points,
+        userId: request.userId,
+        type: request.type,
+        label: request.label,
+        campaignId,
+        imageId
       };
       resolve(annotation);
     });
+  }
+
+  /**
+   * Generates the next unique identifier for annotations
+   */
+  getNextAnnotationId() {
+    // TODO: real method once connected to DB
+    return Math.floor(Math.random() * 1000000000);
   }
 }
