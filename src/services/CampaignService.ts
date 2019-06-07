@@ -27,8 +27,7 @@ const campaignDummy: Campaign[] = [
     description:
       'When something is made with the utmost care, it shows. At Bosch, the same thoughtful attention to detail begins in our factories where we test, inspect and perfect every last detail of our dishwashers.',
     vocabulary: ['Plate', 'Fork', 'Mug', 'Bowl'],
-    image:
-      'http://sandrasteffen.com/wp-content/uploads/2019/01/how-to-load-a-bosch-dishwasher-load-bosch-dishwasher.jpg'
+    image: 'https://media3.bosch-home.com/Images/600x/MCIM02055360_Bosch-service-Dishwasher-Support_1600x.jpg'
   }
 ];
 
