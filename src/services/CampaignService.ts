@@ -16,9 +16,9 @@ const campaignDummy: Campaign[] = [
     name: 'Banana Campaign',
     description:
       'The campaign is all about bananas!\n\nWe need as much bananas as we can. Please upload every banana you see.\n\nThere are \
-      about 110 different species of banana. In popular culture and commerce, "banana" usually refers to the soft and sweet kind, \
-      also known as dessert bananas. Other kinds, or cultivars, of banana have a firmer, starchier fruit. Those are usually called \
-      plantains. Plantains are mostly used for cooking or fibre.',
+about 110 different species of banana. In popular culture and commerce, "banana" usually refers to the soft and sweet kind, \
+also known as dessert bananas. Other kinds, or cultivars, of banana have a firmer, starchier fruit. Those are usually called \
+plantains. Plantains are mostly used for cooking or fibre.',
     vocabulary: ['Banana', 'Not Banana'],
     image: 'https://www.organicfacts.net/wp-content/uploads/banana.jpg'
   },
@@ -29,7 +29,7 @@ const campaignDummy: Campaign[] = [
     name: 'Dishwasher Campaign',
     description:
       'When something is made with the utmost care, it shows. At Bosch, the same thoughtful attention to detail begins in our \
-      factories where we test, inspect and perfect every last detail of our dishwashers.',
+factories where we test, inspect and perfect every last detail of our dishwashers.',
     vocabulary: ['Plate', 'Fork', 'Mug', 'Bowl'],
     image: 'https://media3.bosch-home.com/Images/600x/MCIM02055360_Bosch-service-Dishwasher-Support_1600x.jpg'
   }
