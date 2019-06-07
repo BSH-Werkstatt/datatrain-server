@@ -11,6 +11,7 @@ export interface Campaign {
   name: string;
   description: string;
   vocabulary: string[];
+  image: string;
 }
 
 export enum CampaignType {
