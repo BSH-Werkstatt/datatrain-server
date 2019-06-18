@@ -33,8 +33,6 @@ export class DatabaseConnector {
   }
 
   async connect(): Promise<any> {
-    await this.sleep(5000);
-
     return new Promise(async (resolve, reject) => {
       const url = 'mongodb://' + this.user + ':' + this.password + '@' + this.host + ':27017/' + this.database;
       const client = new mongodb.MongoClient(url, { useNewUrlParser: true });
