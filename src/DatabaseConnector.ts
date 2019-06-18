@@ -38,11 +38,12 @@ export class DatabaseConnector {
 
   async connect(): Promise<any> {
     return new Promise(async (resolve, reject) => {
-      // The database docker image needs some time to start up,
-      // before we find a better solution this gives it 10 seconds
-      // this is really only relevant for the initial connection
+      /*
+            The database docker image needs some time to start up,
+            before we find a better solution this gives it 10 seconds
+            this is really only relevant for the initial connection
+        */
       // TODO: find solution in docker for this
-
       if (!INITIAL_CONNECTION_MADE) {
         await this.sleep(5000);
       }
