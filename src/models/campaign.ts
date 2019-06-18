@@ -1,17 +1,42 @@
-export interface Campaign {
-  /**
-   * @isInt id
-   */
-  id: number;
-  /**
-   * @isInt ownerId
-   */
-  ownerId: number;
+export class Campaign {
+  id: string;
+  ownerId: string;
   type: CampaignType;
   name: string;
   description: string;
   taxonomy: string[];
   image: string;
+
+  constructor(
+    id: string,
+    ownerId: string,
+    type: CampaignType,
+    name: string,
+    description: string,
+    taxonomy: string[],
+    image: string
+  ) {
+    this.id = id;
+    this.ownerId = ownerId;
+    this.type = type;
+    this.name = name;
+    this.description = description;
+    this.taxonomy = taxonomy;
+    this.image = image;
+  }
+
+  static fromObject(object: any) {
+    console.log(object);
+    return new Campaign(
+      object.id,
+      object.ownerId,
+      object.type,
+      object.name,
+      object.description,
+      object.taxonomy,
+      object.image
+    );
+  }
 }
 
 export enum CampaignType {
@@ -28,8 +53,8 @@ export enum CampaignType {
 // TODO: move initialization into db-init.js
 export const campaignDummy: Campaign[] = [
   {
-    ownerId: 1,
-    id: 1,
+    ownerId: '1',
+    id: '1',
     type: CampaignType.ImageAnnotationCampaign,
     name: 'Banana Campaign',
     description:
@@ -41,8 +66,8 @@ plantains. Plantains are mostly used for cooking or fibre.',
     image: 'https://www.organicfacts.net/wp-content/uploads/banana.jpg'
   },
   {
-    ownerId: 2,
-    id: 2,
+    ownerId: '2',
+    id: '2',
     type: CampaignType.ImageAnnotationCampaign,
     name: 'Dishwasher Campaign',
     description:

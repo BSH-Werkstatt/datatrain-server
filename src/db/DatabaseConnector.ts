@@ -1,4 +1,4 @@
-import { campaignDummy } from './models/campaign';
+import { campaignDummy } from '../models/campaign';
 import mongodb from 'mongodb';
 
 export class DatabaseConnector {
@@ -16,12 +16,23 @@ export class DatabaseConnector {
     this.password = password;
   }
 
+  /**
+   * gets an instance of DatabaseConnector initialized with the correct credentials
+   */
+  static getInstance(): DatabaseConnector {
+    const db = new DatabaseConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
+
+    return db;
+  }
+
   // TODO: move initialization into db-init.js
   /**
    * Wrapper around the initialization process
    */
   init() {
-    this.insertDummyData();
+    setTimeout(() => {
+      this.insertDummyData();
+    }, 60000);
   }
 
   /**
@@ -31,7 +42,11 @@ export class DatabaseConnector {
     const collection = this.db.collection('campaigns');
 
     collection.insertMany(campaignDummy, (err: any, result: any) => {
-      console.log('Inserted 2 campaigns into the collection');
+      if (err) {
+        console.error('error while inserting dummy data', err);
+      } else {
+        console.log('Inserted 2 campaigns into the collection', result);
+      }
     });
   }
 
@@ -60,6 +75,31 @@ export class DatabaseConnector {
         this.db = db.db(this.database);
         resolve(this.db);
       });
+    });
+  }
+
+  /**
+   * Queries the collection according the given parameters
+   * @param collection database collection
+   * @param params query parameters
+   */
+  find(collection: string, params: object): Promise<object[]> {
+    return new Promise<object[]>((resolve, reject) => {
+      this.connect()
+        .then((db: any) => {
+          const col = db.collection(collection);
+
+          col.find(params).toArray((err: any, docs: object[]) => {
+            if (err) {
+              reject(err);
+            }
+
+            resolve(docs);
+          });
+        })
+        .catch((err: any) => {
+          reject(err);
+        });
     });
   }
 }

@@ -1,4 +1,4 @@
-import { Campaign, CampaignType, campaignDummy } from '../models/campaign';
+import { Campaign } from '../models/campaign';
 import { ImageData } from '../models/image';
 import { Annotation, AnnotationCreationRequest } from '../models/annotation';
 
@@ -7,23 +7,24 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { UserService } from './UserService';
+import { CampaignConnector } from '../db/CampaignConnector';
 
 export class CampaignService {
   /**
    * Returns the Campaign with the given identifier, if it does not exist, an error will be raised
    * @param id Identifier of the campaign
    */
-  get(id: number): Promise<Campaign> {
+  get(id: string): Promise<Campaign> {
     const promise = new Promise<Campaign>((resolve, reject) => {
-      const result: Campaign = campaignDummy.find(campaign => {
-        return campaign.id === id;
+      const db = CampaignConnector.getInstance();
+      db.get(id).then(result => {
+        if (!result) {
+          reject(new Error('Could not get campaign with id: ' + id));
+        } else {
+          resolve(result);
+        }
       });
-
-      if (!result) {
-        reject(new Error('Could not get campaign with id: ' + id));
-      } else {
-        resolve(result);
-      }
     });
 
     return promise;
@@ -33,8 +34,15 @@ export class CampaignService {
    * Returns all campaigns as an array of Campaign objects
    */
   getAll(): Promise<Campaign[]> {
-    const promise = new Promise<Campaign[]>(resolve => {
-      resolve(campaignDummy);
+    const promise = new Promise<Campaign[]>((resolve, reject) => {
+      const db = CampaignConnector.getInstance();
+      db.getAll().then(result => {
+        if (!result) {
+          reject(new Error('Could not get campaigns'));
+        } else {
+          resolve(result);
+        }
+      });
     });
 
     return promise;
@@ -46,7 +54,7 @@ export class CampaignService {
    * @param campaignId Identifier of the campaign to which the image is uploaded to
    * @param request Express request with the uploaded image file (request.file)
    */
-  uploadImage(campaignId: number, request: express.Request): Promise<ImageData> {
+  uploadImage(campaignId: string, request: express.Request): Promise<ImageData> {
     const imageId = this.getNextImageId();
 
     const storage = multer.diskStorage({
@@ -71,7 +79,7 @@ export class CampaignService {
         const image: ImageData = {
           id: imageId,
           campaignId,
-          userId: 1,
+          userId: '1',
           annotations: []
         };
 
@@ -85,7 +93,7 @@ export class CampaignService {
    */
   getNextImageId() {
     // TODO: real method once connected to DB
-    return Math.floor(Math.random() * 1000000000);
+    return '' + Math.floor(Math.random() * 1000000000);
   }
 
   /**
@@ -93,7 +101,7 @@ export class CampaignService {
    * This method does _not_ return the image file, but only an object conforming to the Image interface
    * @param campaignId Identifier of the Campaign from which an image is to be selected
    */
-  getRandomImage(campaignId: number): Promise<ImageData> {
+  getRandomImage(campaignId: string): Promise<ImageData> {
     return new Promise((resolve, reject) => {
       const images = this.getImagesOfCampaign(campaignId);
 
@@ -109,9 +117,9 @@ export class CampaignService {
       const chosenPath = images[index];
 
       const image: ImageData = {
-        id: parseInt(path.basename(chosenPath, path.extname(chosenPath)), 10),
+        id: path.basename(chosenPath, path.extname(chosenPath)),
         campaignId,
-        userId: 1,
+        userId: '1',
         annotations: []
       };
 
@@ -125,7 +133,7 @@ export class CampaignService {
    * Returns the paths of the images belonging to a campaign with the identifier campaignId
    * @param campaignId Identifier of the Campaign to get the image paths of
    */
-  getImagesOfCampaign(campaignId: number): string[] {
+  getImagesOfCampaign(campaignId: string): string[] {
     // TODO: replace with asynchronous functions!
 
     const campaignPath = __dirname + '/../uploads/' + campaignId;
@@ -146,12 +154,14 @@ export class CampaignService {
    * @param imageId Identifier of the image to which the annotation belongs to
    * @param request Express request with the rest of the form data (user etc.)
    */
-  uploadAnnotation(campaignId: number, imageId: number, request: AnnotationCreationRequest): Promise<Annotation> {
+  uploadAnnotation(campaignId: string, imageId: string, request: AnnotationCreationRequest): Promise<Annotation> {
     return new Promise((resolve, reject) => {
+      const userId = UserService.getUserIdFromToken(request.userToken);
+
       const annotation: Annotation = {
-        id: this.getNextAnnotationId(),
+        id: 'dummyid',
         points: request.points,
-        userId: request.userId,
+        userId,
         type: request.type,
         label: request.label,
         campaignId,

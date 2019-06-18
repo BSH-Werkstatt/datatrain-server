@@ -1,17 +1,8 @@
 import { Annotation } from './annotation';
 
-export interface ImageData {
-  /**
-   * @isInt id
-   */
-  id: number;
-  /**
-   * @isInt campaignId
-   */
-  campaignId: number;
-  /**
-   * @isInt userId
-   */
-  userId: number;
+export class ImageData {
+  id: string;
+  campaignId: string;
+  userId: string;
   annotations: Annotation[];
 }

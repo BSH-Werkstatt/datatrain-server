@@ -1,23 +1,20 @@
-export interface Annotation {
-  /**
-   * @isInt id
-   */
-  id: number;
+export class Annotation {
+  id: string;
   points: Point[];
   type: string;
   label: string;
   /**
    * @isInt userId
    */
-  userId: number;
+  userId: string;
   /**
    * @isInt campaignId
    */
-  campaignId: number;
+  campaignId: string;
   /**
    * @isInt imageId
    */
-  imageId: number;
+  imageId: string;
 }
 
 export interface AnnotationCreationRequest {
@@ -27,7 +24,7 @@ export interface AnnotationCreationRequest {
   /**
    * @isInt userId
    */
-  userId: number;
+  userToken: string;
 }
 
 export interface Point {

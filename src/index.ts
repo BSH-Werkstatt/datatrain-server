@@ -2,11 +2,11 @@ import './controller/CampaignsController';
 import bodyParser from 'body-parser';
 import express from 'express';
 import methodOverride from 'method-override';
-import './DatabaseConnector';
+import './db/DatabaseConnector';
 
 // @ts-ignore
 import { RegisterRoutes } from './routes';
-import { DatabaseConnector } from './DatabaseConnector';
+import { DatabaseConnector } from './db/DatabaseConnector';
 const port = process.env.PORT || 5000;
 
 const app = express();
@@ -26,7 +26,7 @@ RegisterRoutes(app);
 console.log('Starting server on port ' + port + '...');
 app.listen(port);
 
-const db = new DatabaseConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
+const db = DatabaseConnector.getInstance();
 db.connect()
   .then(res => {
     console.log('datatrain user connected');
