@@ -2,8 +2,11 @@ import './controller/CampaignsController';
 import bodyParser from 'body-parser';
 import express from 'express';
 import methodOverride from 'method-override';
+import './DatabaseConnector';
+
 // @ts-ignore
 import { RegisterRoutes } from './routes';
+import { DatabaseConnector } from './DatabaseConnector';
 const port = process.env.PORT || 5000;
 
 const app = express();
@@ -22,3 +25,6 @@ RegisterRoutes(app);
 
 console.log('Starting server on port ' + port + '...');
 app.listen(port);
+
+const db = new DatabaseConnector('database_dev', 'data-train', '', '');
+db.init();
