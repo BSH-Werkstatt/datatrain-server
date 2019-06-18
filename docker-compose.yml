@@ -23,5 +23,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: init12345
+      MONGO_INITDB_DATABASE: datatrain
     networks:
       - docker-network
+    volumes:
+      - ./db-init/:/docker-entrypoint-initdb.d

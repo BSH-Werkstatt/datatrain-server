@@ -1,64 +1,52 @@
-import mongoose from 'mongoose';
-
-// TODO: remove after docker solution
-let INITIAL_CONNECTION_MADE = false;
+import { campaignDummy } from './models/campaign';
+import mongodb from 'mongodb';
 
 export class DatabaseConnector {
   host: string;
-  db: string;
+  database: string;
   user: string;
   password: string;
 
-  conn: any;
+  db: any;
 
-  constructor(host: string, db: string, user: string, password: string) {
+  constructor(host: string, database: string, user: string, password: string) {
     this.host = host;
-    this.db = db;
+    this.database = database;
     this.user = user;
     this.password = password;
   }
 
   init() {
-    this.connect()
-      .then(connection => {
-        this.conn = connection;
-        console.log('Initial connection to ' + this.host + '/' + this.db + ' established.');
-        this.checkTablesExist();
-      })
-      .catch(err => {
-        console.error('Initial connection could not be established:', err);
-      });
+    this.insertDummyData();
   }
 
-  checkTablesExist() {}
+  insertDummyData() {
+    const collection = this.db.collection('campaigns');
+
+    collection.insertMany(campaignDummy, (err: any, result: any) => {
+      console.log('Inserted 2 campaigns into the collection');
+    });
+  }
 
   sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   async connect(): Promise<any> {
+    await this.sleep(5000);
+
     return new Promise(async (resolve, reject) => {
-      /*
-            The database docker image needs some time to start up,
-            before we find a better solution this gives it 10 seconds
-            this is really only relevant for the initial connection
-        */
-      // TODO: find solution in docker for this
-      if (!INITIAL_CONNECTION_MADE) {
-        await this.sleep(5000);
-      }
+      const url = 'mongodb://' + this.user + ':' + this.password + '@' + this.host + ':27017/' + this.database;
+      const client = new mongodb.MongoClient(url, { useNewUrlParser: true });
 
-      // TODO: add user+pwd
-      mongoose.connect('mongodb://' + this.host + ':27017/' + this.db, { useNewUrlParser: true });
+      // Use connect method to connect to the Server
+      client.connect((err, db) => {
+        if (err) {
+          reject(err);
+        }
 
-      const conn = mongoose.connection;
-      conn.on('error', (err: any) => {
-        reject(err);
-      });
-      conn.once('open', () => {
-        INITIAL_CONNECTION_MADE = true;
-
-        resolve(conn);
+        this.db = db.db(this.database);
+        resolve(this.db);
       });
     });
   }
