@@ -21,6 +21,11 @@ export enum CampaignType {
   ImageAnnotationCampaign = 0
 }
 
+/*
+  Dummy data we are using for testing
+*/
+
+// TODO: move initialization into db-init.js
 export const campaignDummy: Campaign[] = [
   {
     ownerId: 1,

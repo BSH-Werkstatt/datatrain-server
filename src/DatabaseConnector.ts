@@ -16,10 +16,17 @@ export class DatabaseConnector {
     this.password = password;
   }
 
+  // TODO: move initialization into db-init.js
+  /**
+   * Wrapper around the initialization process
+   */
   init() {
     this.insertDummyData();
   }
 
+  /**
+   * Initialized the database with dummy data for testing
+   */
   insertDummyData() {
     const collection = this.db.collection('campaigns');
 
@@ -28,11 +35,18 @@ export class DatabaseConnector {
     });
   }
 
+  /**
+   * Stops the execution of the script for ms miliseconds
+   * @param ms delay in ms
+   */
   sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  async connect(): Promise<any> {
+  /**
+   * Creates connection to the database
+   */
+  connect(): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const url = 'mongodb://' + this.user + ':' + this.password + '@' + this.host + ':27017/' + this.database;
       const client = new mongodb.MongoClient(url, { useNewUrlParser: true });
