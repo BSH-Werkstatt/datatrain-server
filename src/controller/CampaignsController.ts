@@ -26,7 +26,7 @@ export class CampaignsController extends Controller {
 
   @Get('{campaignId}/images')
   public async getAllImages(campaignId: string): Promise<ImageData[]> {
-    return await new CampaignService().getAllImages(campaignId);
+    return await new CampaignService().getAllImagesOfCampaign(campaignId);
   }
 
   @Get('{campaignId}/images/random')

@@ -158,7 +158,18 @@ export class CampaignService {
     });
   }
 
-  getAllImages(campaignId: string): ImageData[] {
-    return [];
+  getAllImagesOfCampaign(campaignId: string): Promise<ImageData[]> {
+    return new Promise<ImageData[]>((resolve, reject) => {
+      ImageConnector.getInstance((db: ImageConnector) => {
+        // not the most efficient, but will get the job done before we write something better, TODO
+        db.getAllOfCampaign(campaignId).then(result => {
+          if (!result) {
+            reject(new Error('Could not get images of campaign'));
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    });
   }
 }
