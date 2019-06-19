@@ -5,7 +5,7 @@ import { ImageData } from '../models/data';
 import { Campaign } from '../models/campaign';
 import { CampaignService } from '../services/CampaignService';
 import { AnnotationCreationRequest, Annotation } from '../models/annotation';
-import '../db/DatabaseConnector';
+import { Leaderboard } from '../models/leaderboard';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
@@ -41,5 +41,10 @@ export class CampaignsController extends Controller {
     @Body() request: AnnotationCreationRequest
   ): Promise<Annotation> {
     return await new CampaignService().uploadAnnotation(campaignId, imageId, request);
+  }
+
+  @Get('{campaignId}/leaderboard')
+  public async getLeaderboard(campaignId: string): Promise<Leaderboard> {
+    return await new CampaignService().getLeaderboard(campaignId);
   }
 }

@@ -9,6 +9,7 @@ export class CampaignConnector extends DatabaseConnector {
    * gets an instance of DatabaseConnector initialized with the correct credentials
    */
   static getInstance(callback: any) {
+    // TODO: store in environmental variables
     const db = new CampaignConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
     db.connect()
       .then(res => {

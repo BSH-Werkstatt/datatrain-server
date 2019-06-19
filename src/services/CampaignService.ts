@@ -9,6 +9,8 @@ import path from 'path';
 import { UserService } from './UserService';
 import { CampaignConnector } from '../db/CampaignConnector';
 import { ImageConnector } from '../db/ImageConnector';
+import { Leaderboard } from '../models/leaderboard';
+import { LeaderboardConnector } from '../db/LeaderboardConnector';
 
 export class CampaignService {
   /**
@@ -86,6 +88,7 @@ export class CampaignService {
           if (error) {
             reject(error);
           }
+          this.addLeaderboardScoreToUser(campaignId, userId, 1);
 
           resolve(imageData);
         });
@@ -151,6 +154,8 @@ export class CampaignService {
       );
 
       annotation.save((res: any) => {
+        this.addLeaderboardScoreToUser(campaignId, userId, 1);
+
         resolve(res);
       });
 
@@ -174,6 +179,53 @@ export class CampaignService {
           }
         });
       });
+    });
+  }
+
+  /**
+   * Retrieves the leaderboard of the campaign with the identifier campaignId
+   * @param campaignId Identifier of the campaign
+   */
+  getLeaderboard(campaignId: string): Promise<Leaderboard> {
+    return new Promise<Leaderboard>((resolve, reject) => {
+      LeaderboardConnector.getInstance((db: LeaderboardConnector) => {
+        // not the most efficient, but will get the job done before we write something better, TODO
+        db.get(campaignId).then(result => {
+          if (!result) {
+            reject(new Error('Could not get leaderboard of campaign'));
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    });
+  }
+  /**
+   * Adds score to the leaderboard entry of the user with userId in the campaign with campaignId
+   * @param campaignId campaign identifier
+   * @param userId user identifier
+   * @param score score to be addded
+   */
+  addLeaderboardScoreToUser(campaignId: string, userId: string, score: number) {
+    LeaderboardConnector.getInstance((db: LeaderboardConnector) => {
+      db.get(campaignId)
+        .then((res: Leaderboard) => {
+          const leaderboard = res;
+          leaderboard.addScoreToUser(userId, score);
+          leaderboard.save(() => {
+            console.log('Saved score for annotating');
+          });
+        })
+        .catch(err => {
+          console.error(
+            'Error while adding score to user for annotating',
+            err,
+            'campaignId: ',
+            campaignId,
+            'userId: ',
+            userId
+          );
+        });
     });
   }
 }

@@ -1,4 +1,3 @@
-import { campaignDummy } from '../models/campaign';
 import mongodb from 'mongodb';
 
 export class DatabaseConnector {
@@ -31,31 +30,6 @@ export class DatabaseConnector {
       .catch(err => {
         console.error('An error occured while connecting to the database: ', err);
       });
-  }
-
-  // TODO: move initialization into db-init.js
-  /**
-   * Wrapper around the initialization process
-   */
-  init() {
-    setTimeout(() => {
-      this.insertDummyData();
-    }, 30000);
-  }
-
-  /**
-   * Initialized the database with dummy data for testing
-   */
-  insertDummyData() {
-    const collection = this.db.collection('campaigns');
-
-    collection.insertMany(campaignDummy, (err: any, result: any) => {
-      if (err) {
-        console.error('error while inserting dummy data', err);
-      } else {
-        console.log('Inserted 2 campaigns into the collection', result);
-      }
-    });
   }
 
   /**
@@ -134,7 +108,7 @@ export class DatabaseConnector {
     return new Promise<object>((resolve, reject) => {
       const col = this.db.collection(collection);
 
-      this.db.collection(collection).update(params, data, (err: any, result: any) => {
+      col.updateOne(params, { $set: data }, (err: any, result: any) => {
         if (err) {
           reject(err);
         }
