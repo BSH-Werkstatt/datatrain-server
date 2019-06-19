@@ -1,14 +1,14 @@
 import { Campaign } from '../models/campaign';
-import { ImageData } from '../models/image';
+import { ImageData } from '../models/data';
 import { Annotation, AnnotationCreationRequest } from '../models/annotation';
 
 // TODO: Implement with abstract Data and choose type of data depending on Campaign, not directly with Image
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { UserService } from './UserService';
 import { CampaignConnector } from '../db/CampaignConnector';
+import { ImageConnector } from '../db/ImageConnector';
 
 export class CampaignService {
   /**
@@ -17,13 +17,15 @@ export class CampaignService {
    */
   get(id: string): Promise<Campaign> {
     const promise = new Promise<Campaign>((resolve, reject) => {
-      const db = CampaignConnector.getInstance();
-      db.get(id).then(result => {
-        if (!result) {
-          reject(new Error('Could not get campaign with id: ' + id));
-        } else {
-          resolve(result);
-        }
+      CampaignConnector.getInstance((db: CampaignConnector) => {
+        db.get(id).then(result => {
+          if (!result) {
+            reject(new Error('Could not get campaign with id: ' + id));
+          } else {
+            db.connection.close();
+            resolve(result);
+          }
+        });
       });
     });
 
@@ -35,13 +37,15 @@ export class CampaignService {
    */
   getAll(): Promise<Campaign[]> {
     const promise = new Promise<Campaign[]>((resolve, reject) => {
-      const db = CampaignConnector.getInstance();
-      db.getAll().then(result => {
-        if (!result) {
-          reject(new Error('Could not get campaigns'));
-        } else {
-          resolve(result);
-        }
+      CampaignConnector.getInstance((db: CampaignConnector) => {
+        db.getAll().then(result => {
+          if (!result) {
+            reject(new Error('Could not get all campaigns'));
+          } else {
+            db.connection.close();
+            resolve(result);
+          }
+        });
       });
     });
 
@@ -55,96 +59,74 @@ export class CampaignService {
    * @param request Express request with the uploaded image file (request.file)
    */
   uploadImage(campaignId: string, request: express.Request): Promise<ImageData> {
-    const imageId = this.getNextImageId();
-
-    const storage = multer.diskStorage({
-      // passing directory as a string means multer will take care of creating it
-      // TODO: directory in a constant
-      destination: __dirname + '/../uploads/' + campaignId + '/',
-      filename: (req, file, callback) => {
-        const filename = file.originalname;
-        const ext = path.extname(filename);
-        callback(null, imageId + ext);
-      }
-    });
-
-    const multerSingle = multer({ storage }).single('imageFile');
-
     return new Promise((resolve, reject) => {
-      multerSingle(request, undefined, async error => {
-        if (error) {
-          reject(error);
-        }
+      // @ts-ignore
+      const userToken = request.query.userToken;
+      const userId = UserService.getUserIdFromToken(userToken);
 
-        const image: ImageData = {
-          id: imageId,
-          campaignId,
-          userId: '1',
-          annotations: []
-        };
+      const image = new ImageData('', campaignId, userId, []);
+      image.save((imageData: ImageData) => {
+        const imageId = imageData.id;
 
-        resolve(image);
+        // function to save the image
+        const storage = multer.diskStorage({
+          // passing directory as a string means multer will take care of creating it
+          // TODO: directory in a constant
+          destination: __dirname + '/../uploads/' + campaignId + '/',
+          filename: (req, file, callback) => {
+            const filename = file.originalname;
+            const ext = path.extname(filename);
+            callback(null, imageId + ext);
+          }
+        });
+
+        const multerSingle = multer({ storage }).single('imageFile');
+
+        multerSingle(request, undefined, async error => {
+          if (error) {
+            reject(error);
+          }
+
+          resolve(imageData);
+        });
       });
     });
   }
 
   /**
-   * Generates the next unique identifier for images
-   */
-  getNextImageId() {
-    // TODO: real method once connected to DB
-    return '' + Math.floor(Math.random() * 1000000000);
-  }
-
-  /**
    * Returns a random Image from all images of the Campaign with the identifier campaignId
-   * This method does _not_ return the image file, but only an object conforming to the Image interface
+   * This method does _not_ return the image file, but only an object of the ImageData class
    * @param campaignId Identifier of the Campaign from which an image is to be selected
    */
   getRandomImage(campaignId: string): Promise<ImageData> {
-    return new Promise((resolve, reject) => {
-      const images = this.getImagesOfCampaign(campaignId);
-
-      if (images.length === 0) {
-        reject(new Error('The Campaign with id ' + campaignId + ' does not have any images or does not exist.'));
-      }
-
-      let index = Math.floor(Math.random() * images.length);
-      if (index >= images.length) {
-        index = images.length - 1;
-      }
-
-      const chosenPath = images[index];
-
-      const image: ImageData = {
-        id: path.basename(chosenPath, path.extname(chosenPath)),
-        campaignId,
-        userId: '1',
-        annotations: []
-      };
-
-      // TODO: store in database
-
-      resolve(image);
+    return new Promise<ImageData>((resolve, reject) => {
+      ImageConnector.getInstance((db: ImageConnector) => {
+        // not the most efficient, but will get the job done before we write something better, TODO
+        db.getAllOfCampaign(campaignId).then(result => {
+          if (!result) {
+            reject(new Error('Could not get images of campaign'));
+          } else {
+            const i = Math.floor(Math.random() * result.length);
+            resolve(ImageData.fromObject(result[i]));
+          }
+        });
+      });
     });
   }
 
   /**
-   * Returns the paths of the images belonging to a campaign with the identifier campaignId
-   * @param campaignId Identifier of the Campaign to get the image paths of
+   * basically a random hex string generator
    */
-  getImagesOfCampaign(campaignId: string): string[] {
-    // TODO: replace with asynchronous functions!
+  getAnnotationId(): string {
+    const date = new Date();
+    const timestamp = date.getTime();
+    let str = timestamp.toString(16);
 
-    const campaignPath = __dirname + '/../uploads/' + campaignId;
-
-    if (fs.existsSync(campaignPath)) {
-      const files = fs.readdirSync(campaignPath);
-
-      return files;
-    } else {
-      return [];
+    for (let i = 0; i < 24; i++) {
+      str += Math.floor(Math.random() * 16).toString(16);
     }
+
+    return str;
   }
 
   /**
@@ -158,27 +140,25 @@ export class CampaignService {
     return new Promise((resolve, reject) => {
       const userId = UserService.getUserIdFromToken(request.userToken);
 
-      const annotation: Annotation = {
-        id: 'dummyid',
-        points: request.points,
+      const annotation = new Annotation(
+        this.getAnnotationId(),
+        request.points,
         userId,
-        type: request.type,
-        label: request.label,
+        request.type,
+        request.label,
         campaignId,
         imageId
-      };
+      );
 
-      // TODO: transform for database and store with image
+      annotation.save((res: any) => {
+        resolve(res);
+      });
 
-      resolve(annotation);
+      reject('Could not save annotation');
     });
   }
 
-  /**
-   * Generates the next unique identifier for annotations
-   */
-  getNextAnnotationId() {
-    // TODO: real method once connected to DB
-    return Math.floor(Math.random() * 1000000000);
+  getAllImages(campaignId: string): ImageData[] {
+    return [];
   }
 }

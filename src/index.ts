@@ -26,12 +26,6 @@ RegisterRoutes(app);
 console.log('Starting server on port ' + port + '...');
 app.listen(port);
 
-const db = DatabaseConnector.getInstance();
-db.connect()
-  .then(res => {
-    console.log('datatrain user connected');
-    db.init();
-  })
-  .catch(err => {
-    console.log('error during init: ', err);
-  });
+DatabaseConnector.getInstance((db: DatabaseConnector) => {
+  db.init();
+});

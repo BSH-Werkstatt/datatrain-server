@@ -8,8 +8,9 @@ export class DatabaseConnector {
   password: string;
 
   db: any;
+  connection: any;
 
-  constructor(host: string, database: string, user: string, password: string) {
+  protected constructor(host: string, database: string, user: string, password: string) {
     this.host = host;
     this.database = database;
     this.user = user;
@@ -18,11 +19,18 @@ export class DatabaseConnector {
 
   /**
    * gets an instance of DatabaseConnector initialized with the correct credentials
+   * @param callback callback function which takes the DatabaseConnector instance as an argument
    */
-  static getInstance(): DatabaseConnector {
+  static getInstance(callback: any) {
     const db = new DatabaseConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
-
-    return db;
+    db.connect()
+      .then(res => {
+        callback(db);
+        // db.connection.close();
+      })
+      .catch(err => {
+        console.error('An error occured while connecting to the database: ', err);
+      });
   }
 
   // TODO: move initialization into db-init.js
@@ -32,7 +40,7 @@ export class DatabaseConnector {
   init() {
     setTimeout(() => {
       this.insertDummyData();
-    }, 60000);
+    }, 30000);
   }
 
   /**
@@ -62,7 +70,7 @@ export class DatabaseConnector {
    * Creates connection to the database
    */
   connect(): Promise<any> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const url = 'mongodb://' + this.user + ':' + this.password + '@' + this.host + ':27017/' + this.database;
       const client = new mongodb.MongoClient(url, { useNewUrlParser: true });
 
@@ -72,8 +80,66 @@ export class DatabaseConnector {
           reject(err);
         }
 
+        this.connection = db;
         this.db = db.db(this.database);
         resolve(this.db);
+      });
+    });
+  }
+
+  /**
+   * Inserts one document into a collection
+   * @param collection name of the collection
+   * @param data document as an object
+   */
+  insertOne(collection: string, data: object): Promise<object> {
+    return new Promise<object>((resolve, reject) => {
+      const col = this.db.collection(collection);
+
+      col.insertOne(data, (err: any, result: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  /**
+   * Inserts many documents into a collection
+   * @param collection name of the collection
+   * @param data documents as an array of object
+   */
+  insertMany(collection: string, data: object[]): Promise<object> {
+    return new Promise<object>((resolve, reject) => {
+      const col = this.db.collection(collection);
+
+      col.insertMany(data, (err: any, result: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  /**
+   * Inserts one document into a collection
+   * @param collection name of the collection
+   * @param data document as an object
+   */
+  updateDocument(collection: string, params: object, data: object): Promise<object> {
+    return new Promise<object>((resolve, reject) => {
+      const col = this.db.collection(collection);
+
+      this.db.collection(collection).update(params, data, (err: any, result: any) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve(result);
       });
     });
   }
@@ -85,21 +151,34 @@ export class DatabaseConnector {
    */
   find(collection: string, params: object): Promise<object[]> {
     return new Promise<object[]>((resolve, reject) => {
-      this.connect()
-        .then((db: any) => {
-          const col = db.collection(collection);
+      const col = this.db.collection(collection);
 
-          col.find(params).toArray((err: any, docs: object[]) => {
-            if (err) {
-              reject(err);
-            }
-
-            resolve(docs);
-          });
-        })
-        .catch((err: any) => {
+      col.find(params).toArray((err: any, docs: object[]) => {
+        if (err) {
           reject(err);
-        });
+        }
+
+        resolve(docs);
+      });
+    });
+  }
+
+  /**
+   * Queries the collection according the given parameters, returns only one result
+   * @param collection database collection
+   * @param params query parameters
+   */
+  findOne(collection: string, params: object): Promise<object> {
+    return new Promise<object>((resolve, reject) => {
+      const col = this.db.collection(collection);
+
+      col.findOne(params, (err: any, docs: object[]) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve(docs);
+      });
     });
   }
 }

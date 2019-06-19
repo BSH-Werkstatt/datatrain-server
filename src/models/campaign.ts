@@ -1,6 +1,9 @@
 export class Campaign {
   id: string;
   ownerId: string;
+  /**
+   * @isInt type
+   */
   type: CampaignType;
   name: string;
   description: string;
@@ -26,9 +29,8 @@ export class Campaign {
   }
 
   static fromObject(object: any) {
-    console.log(object);
     return new Campaign(
-      object.id,
+      object._id ? object._id.toString() : object.id,
       object.ownerId,
       object.type,
       object.name,

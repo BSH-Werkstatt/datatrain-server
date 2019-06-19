@@ -18,7 +18,7 @@
                 "type": "file"
               },
               {
-                "in": "body",
+                "in": "query",
                 "name": "userToken",
                 "required": true,
                 "type": "string"
