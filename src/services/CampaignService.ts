@@ -158,6 +158,10 @@ export class CampaignService {
     });
   }
 
+  /**
+   * Retrieves all images of the campaign with the identifier campaignId
+   * @param campaignId Identifier of the campaign
+   */
   getAllImagesOfCampaign(campaignId: string): Promise<ImageData[]> {
     return new Promise<ImageData[]>((resolve, reject) => {
       ImageConnector.getInstance((db: ImageConnector) => {
