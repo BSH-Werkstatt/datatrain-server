@@ -9,15 +9,22 @@ services:
       dockerfile: Dockerfile
       args:
         PORT: 5000
+    links:
+      - database_dev
+    depends_on:
+      - database_dev
     ports:
       - '5000:5000'
+    networks:
+      - docker-network
   database_dev:
     image: mongo
-    links:
-      - backend_dev
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: init12345
+      MONGO_INITDB_DATABASE: datatrain
     networks:
       - docker-network
+    volumes:
+      - ./db-init/:/docker-entrypoint-initdb.d

@@ -3,7 +3,38 @@
     "outputDirectory": "./dist",
     "entryFile": "./src/index.ts",
     "host": "http://ios19bsh.ase.in.tum.de/dev/api",
-    "basePath": "/docs"
+    "basePath": "/docs",
+    "specMerging": "recursive",
+    "spec": {
+      "paths": {
+        "/campaigns/{campaignId}/images": {
+          "post": {
+            "consumes": ["multipart/form-data"],
+            "parameters": [
+              {
+                "in": "formData",
+                "name": "imageFile",
+                "required": true,
+                "type": "file"
+              },
+              {
+                "in": "query",
+                "name": "userToken",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "in": "path",
+                "name": "campaignId",
+                "required": true,
+                "format": "int32",
+                "type": "integer"
+              }
+            ]
+          }
+        }
+      }
+    }
   },
   "routes": {
     "basePath": "/",
