@@ -1,4 +1,6 @@
 import './controller/CampaignsController';
+import './controller/UsersController';
+
 import bodyParser from 'body-parser';
 import express from 'express';
 import methodOverride from 'method-override';

@@ -1,5 +1,5 @@
 import { DatabaseConnector } from './DatabaseConnector';
-import { ObjectID, ObjectId } from 'mongodb';
+import { ObjectId, ObjectID } from 'mongodb';
 import { Leaderboard } from '../models/leaderboard';
 
 export class LeaderboardConnector extends DatabaseConnector {
@@ -27,7 +27,7 @@ export class LeaderboardConnector extends DatabaseConnector {
    */
   get(campaignId: string): Promise<Leaderboard> {
     return new Promise((resolve, reject) => {
-      this.findOne(this.collection, { campaignId: ObjectID.createFromHexString(campaignId) })
+      this.findOne(this.collection, { campaignId: ObjectId.createFromHexString(campaignId) })
         .then(result => {
           if (result) {
             resolve(Leaderboard.fromObject(result));
@@ -56,7 +56,7 @@ export class LeaderboardConnector extends DatabaseConnector {
     });
 
     const self = {
-      campaignId: ObjectID.createFromHexString(leaderboard.campaignId),
+      campaignId: ObjectId.createFromHexString(leaderboard.campaignId),
       scores
     };
 
