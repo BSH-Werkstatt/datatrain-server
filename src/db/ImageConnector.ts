@@ -82,10 +82,20 @@ export class ImageConnector extends DatabaseConnector {
    * @param annotation annotation to be saved with imageId field
    */
   saveAnnotation(annotation: Annotation): Promise<any> {
-    return this.updateDocument(
-      this.collection,
-      { _id: ObjectID.createFromHexString(annotation.imageId) },
-      { $push: { annotations: annotation } }
-    );
+    return new Promise<object>((resolve, reject) => {
+      const col = this.db.collection(this.collection);
+
+      col.updateOne(
+        { _id: ObjectID.createFromHexString(annotation.imageId) },
+        { $push: { annotations: annotation } },
+        (err: any, result: any) => {
+          if (err) {
+            reject(err);
+          }
+
+          resolve(result);
+        }
+      );
+    });
   }
 }

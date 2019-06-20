@@ -27,8 +27,7 @@
                 "in": "path",
                 "name": "campaignId",
                 "required": true,
-                "format": "int32",
-                "type": "integer"
+                "type": "string"
               }
             ]
           }
