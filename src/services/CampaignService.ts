@@ -156,10 +156,12 @@ export class CampaignService {
       annotation.save((res: any) => {
         this.addLeaderboardScoreToUser(campaignId, userId, 1);
 
-        resolve(res);
+        if (res) {
+          resolve(res);
+        } else {
+          reject('Could not save annotation');
+        }
       });
-
-      reject('Could not save annotation');
     });
   }
 
