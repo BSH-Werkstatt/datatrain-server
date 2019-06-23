@@ -12,6 +12,9 @@ import { ImageConnector } from '../db/ImageConnector';
 import { Leaderboard } from '../models/leaderboard';
 import { LeaderboardConnector } from '../db/LeaderboardConnector';
 
+import http from 'http';
+import fs from 'fs';
+
 export class CampaignService {
   /**
    * Returns the Campaign with the given identifier, if it does not exist, an error will be raised
@@ -228,6 +231,74 @@ export class CampaignService {
             userId
           );
         });
+    });
+  }
+
+  /**
+   * Requests a prediction from the ML server of the image in the request
+   * @param campaignId identifier of the campaign, with the model
+   * @param request request containing image
+   */
+  requestPrediction(campaignId: string, request: express.Request) {
+    return new Promise((resolve, reject) => {
+      const imageName = Math.floor(Math.random() * 1000000000);
+
+      const storage = multer.diskStorage({
+        // passing directory as a string means multer will take care of creating it
+        // TODO: directory in a constant
+        destination: __dirname + '/../predictions/',
+        filename: (req, file, callback) => {
+          const filename = file.originalname;
+          const ext = path.extname(filename);
+          console.log('saved');
+          callback(null, imageName + ext);
+        }
+      });
+
+      const multerSingle = multer({ storage }).single('imageFile');
+
+      multerSingle(request, undefined, async error => {
+        if (error) {
+          reject(error);
+        }
+        const url = 'http://backend_dev:5000/predictions/' + request.file.filename;
+        console.log(url);
+        this.requestPredictionFromMLServer(url, __dirname + '/../predictions/').then(res => {
+          resolve(res);
+        });
+      });
+    });
+  }
+
+  async requestPredictionFromMLServer(url: string, folder: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const request = require('request');
+      try {
+        request.post(
+          'http://mldev:6000/predictions/',
+          {
+            json: {
+              imageURL: url
+            }
+          },
+          (error: any, res: any, body: any) => {
+            if (error) {
+              console.error(error);
+              reject(error);
+            }
+
+            if (body && body.predictionURL) {
+              const file = fs.createWriteStream(folder + path.basename(body.predictionURL));
+              http.get(body.predictionURL, response => {
+                response.pipe(file);
+                resolve({ predictionURL: folder + path.basename(body.predictionURL) });
+              });
+            }
+          }
+        );
+      } catch (e) {
+        console.error('Error in POST request to ML server: ', e);
+      }
     });
   }
 }
