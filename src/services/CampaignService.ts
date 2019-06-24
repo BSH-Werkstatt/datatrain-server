@@ -261,7 +261,7 @@ export class CampaignService {
         if (error) {
           reject(error);
         }
-        const url = 'http://backend_dev:5000/predictions/' + request.file.filename;
+        const url = 'http://backend_dev:80/predictions/' + request.file.filename;
         console.log(url);
         this.get(campaignId).then(campaign => {
           if (campaign) {
