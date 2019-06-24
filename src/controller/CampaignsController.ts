@@ -24,6 +24,11 @@ export class CampaignsController extends Controller {
     return await new CampaignService().uploadImage(campaignId, request);
   }
 
+  @Post('{campaignId}/predictions')
+  public async requestPrediction(campaignId: string, @Request() request: express.Request): Promise<any> {
+    return await new CampaignService().requestPrediction(campaignId, request);
+  }
+
   @Get('{campaignId}/images')
   public async getAllImages(campaignId: string): Promise<ImageData[]> {
     return await new CampaignService().getAllImagesOfCampaign(campaignId);

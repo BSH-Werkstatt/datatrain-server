@@ -1,7 +1,7 @@
 import { Campaign } from '../models/campaign';
 import { ImageData } from '../models/data';
 import { Annotation, AnnotationCreationRequest } from '../models/annotation';
-
+import os from 'os';
 // TODO: Implement with abstract Data and choose type of data depending on Campaign, not directly with Image
 import express from 'express';
 import multer from 'multer';
@@ -11,6 +11,9 @@ import { CampaignConnector } from '../db/CampaignConnector';
 import { ImageConnector } from '../db/ImageConnector';
 import { Leaderboard } from '../models/leaderboard';
 import { LeaderboardConnector } from '../db/LeaderboardConnector';
+
+import http from 'http';
+import fs from 'fs';
 
 export class CampaignService {
   /**
@@ -228,6 +231,92 @@ export class CampaignService {
             userId
           );
         });
+    });
+  }
+
+  /**
+   * Requests a prediction from the ML server of the image in the request
+   * @param campaignId identifier of the campaign, with the model
+   * @param request request containing image
+   */
+  requestPrediction(campaignId: string, request: express.Request) {
+    return new Promise((resolve, reject) => {
+      const imageName = Math.floor(Math.random() * 1000000000);
+
+      const storage = multer.diskStorage({
+        // passing directory as a string means multer will take care of creating it
+        // TODO: directory in a constant
+        destination: __dirname + '/../predictions/',
+        filename: (req, file, callback) => {
+          const filename = file.originalname;
+          const ext = path.extname(filename);
+          console.log('saved');
+          callback(null, imageName + ext);
+        }
+      });
+
+      const multerSingle = multer({ storage }).single('imageFile');
+
+      multerSingle(request, undefined, async error => {
+        if (error) {
+          reject(error);
+        }
+        const url = 'http://backend_dev:5000/predictions/' + request.file.filename;
+        console.log(url);
+        this.get(campaignId).then(campaign => {
+          if (campaign) {
+            this.requestPredictionFromMLServer(campaign, url, __dirname + '/../predictions/').then(res => {
+              resolve(res);
+            });
+          } else {
+            resolve({
+              error: 'Campaign with id ' + campaignId + ' does not exist'
+            });
+          }
+        });
+      });
+    });
+  }
+
+  async requestPredictionFromMLServer(campaign: Campaign, url: string, folder: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const request = require('request');
+      try {
+        request.post(
+          'http://mldev:6000/predictions/',
+          {
+            json: {
+              imageURL: url,
+              campaignId: campaign.id,
+              campaignName: campaign.name,
+              campaignTaxonomy: campaign.taxonomy
+            }
+          },
+          (error: any, res: any, body: any) => {
+            if (error) {
+              console.error(error);
+              reject(error);
+            }
+
+            if (body && body.predictionURL) {
+              const file = fs.createWriteStream(folder + path.basename(body.predictionURL));
+              http.get(body.predictionURL, response => {
+                response.pipe(file);
+                if (os.hostname().includes('ase.in.tum.de')) {
+                  resolve({
+                    predictionURL:
+                      'http://ios19bsh.ase.in.tum.de/dev/api/predictions/' + path.basename(body.predictionURL)
+                  });
+                } else {
+                  resolve({ predictionURL: os.hostname() + '/predictions/' + path.basename(body.predictionURL) });
+                }
+              });
+            }
+          }
+        );
+      } catch (e) {
+        console.error('Error in POST request to ML server: ', e);
+      }
     });
   }
 }
