@@ -1,7 +1,7 @@
 import { Campaign } from '../models/campaign';
 import { ImageData } from '../models/data';
 import { Annotation, AnnotationCreationRequest } from '../models/annotation';
-
+import os from 'os';
 // TODO: Implement with abstract Data and choose type of data depending on Campaign, not directly with Image
 import express from 'express';
 import multer from 'multer';
@@ -263,14 +263,22 @@ export class CampaignService {
         }
         const url = 'http://backend_dev:5000/predictions/' + request.file.filename;
         console.log(url);
-        this.requestPredictionFromMLServer(url, __dirname + '/../predictions/').then(res => {
-          resolve(res);
+        this.get(campaignId).then(campaign => {
+          if (campaign) {
+            this.requestPredictionFromMLServer(campaign, url, __dirname + '/../predictions/').then(res => {
+              resolve(res);
+            });
+          } else {
+            resolve({
+              error: 'Campaign with id ' + campaignId + ' does not exist'
+            });
+          }
         });
       });
     });
   }
 
-  async requestPredictionFromMLServer(url: string, folder: string): Promise<any> {
+  async requestPredictionFromMLServer(campaign: Campaign, url: string, folder: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const request = require('request');
       try {
@@ -278,7 +286,10 @@ export class CampaignService {
           'http://mldev:6000/predictions/',
           {
             json: {
-              imageURL: url
+              imageURL: url,
+              campaignId: campaign.id,
+              campaignName: campaign.name,
+              campaignTaxonomy: campaign.taxonomy
             }
           },
           (error: any, res: any, body: any) => {
@@ -291,7 +302,14 @@ export class CampaignService {
               const file = fs.createWriteStream(folder + path.basename(body.predictionURL));
               http.get(body.predictionURL, response => {
                 response.pipe(file);
-                resolve({ predictionURL: folder + path.basename(body.predictionURL) });
+                if (os.hostname().includes('ase.in.tum.de')) {
+                  resolve({
+                    predictionURL:
+                      'http://ios19bsh.ase.in.tum.de/dev/api/predictions/' + path.basename(body.predictionURL)
+                  });
+                } else {
+                  resolve({ predictionURL: os.hostname() + '/predictions/' + path.basename(body.predictionURL) });
+                }
               });
             }
           }
