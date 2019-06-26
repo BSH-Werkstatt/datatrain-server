@@ -45,7 +45,7 @@ export class CampaignsController extends Controller {
     imageId: string,
     @Body() request: AnnotationCreationRequest
   ): Promise<Annotation> {
-    return await new CampaignService().uploadAnnotation(campaignId, imageId, request);
+    return await new CampaignService().uploadAnnotations(campaignId, imageId, request);
   }
 
   @Get('{campaignId}/leaderboard')
