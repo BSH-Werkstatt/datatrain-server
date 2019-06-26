@@ -14,6 +14,7 @@ import { LeaderboardConnector } from '../db/LeaderboardConnector';
 
 import http from 'http';
 import fs from 'fs';
+import { PredictionResult } from '../models/prediction';
 
 export class CampaignService {
   /**
@@ -142,7 +143,7 @@ export class CampaignService {
    * @param imageId Identifier of the image to which the annotation belongs to
    * @param request Express request with the rest of the form data (user etc.)
    */
-  uploadAnnotations(campaignId: string, imageId: string, request: AnnotationCreationRequest): Promise<Annotation> {
+  uploadAnnotations(campaignId: string, imageId: string, request: AnnotationCreationRequest): Promise<Annotation[]> {
     return new Promise((resolve, reject) => {
       const userId = UserService.getUserIdFromToken(request.userToken);
       const annotations: Annotation[] = [];
@@ -151,9 +152,9 @@ export class CampaignService {
         const annotation = new Annotation(
           this.getAnnotationId(),
           item.points,
-          userId,
           item.type,
           item.label,
+          userId,
           campaignId,
           imageId
         );
@@ -244,8 +245,8 @@ export class CampaignService {
    * @param campaignId identifier of the campaign, with the model
    * @param request request containing image
    */
-  requestPrediction(campaignId: string, request: express.Request) {
-    return new Promise((resolve, reject) => {
+  requestPrediction(campaignId: string, request: express.Request): Promise<PredictionResult> {
+    return new Promise<PredictionResult>((resolve, reject) => {
       const imageName = Math.floor(Math.random() * 1000000000);
 
       const storage = multer.diskStorage({
@@ -275,7 +276,7 @@ export class CampaignService {
             });
           } else {
             resolve({
-              error: 'Campaign with id ' + campaignId + ' does not exist'
+              predictionURL: 'Error: campaign with id ' + campaignId + ' does not exist'
             });
           }
         });
@@ -283,8 +284,8 @@ export class CampaignService {
     });
   }
 
-  async requestPredictionFromMLServer(campaign: Campaign, url: string, folder: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
+  async requestPredictionFromMLServer(campaign: Campaign, url: string, folder: string): Promise<PredictionResult> {
+    return new Promise<PredictionResult>((resolve, reject) => {
       const request = require('request');
       try {
         request.post(

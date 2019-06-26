@@ -6,6 +6,7 @@ import { Campaign } from '../models/campaign';
 import { CampaignService } from '../services/CampaignService';
 import { AnnotationCreationRequest, Annotation } from '../models/annotation';
 import { Leaderboard } from '../models/leaderboard';
+import { PredictionResult } from '../models/prediction';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
@@ -25,7 +26,7 @@ export class CampaignsController extends Controller {
   }
 
   @Post('{campaignId}/predictions')
-  public async requestPrediction(campaignId: string, @Request() request: express.Request): Promise<any> {
+  public async requestPrediction(campaignId: string, @Request() request: express.Request): Promise<PredictionResult> {
     return await new CampaignService().requestPrediction(campaignId, request);
   }
 
@@ -44,7 +45,7 @@ export class CampaignsController extends Controller {
     campaignId: string,
     imageId: string,
     @Body() request: AnnotationCreationRequest
-  ): Promise<Annotation> {
+  ): Promise<Annotation[]> {
     return await new CampaignService().uploadAnnotations(campaignId, imageId, request);
   }
 

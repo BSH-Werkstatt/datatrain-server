@@ -44,7 +44,7 @@ export class Annotation {
       connector.saveAnnotations(imageId, annotations).then(res => {
         connector.connection.close();
 
-        callback(this);
+        callback(annotations);
       });
     });
   }
