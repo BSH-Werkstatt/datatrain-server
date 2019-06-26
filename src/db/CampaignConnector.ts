@@ -87,6 +87,8 @@ export class CampaignConnector extends DatabaseConnector {
       });
 
       connector.insertMany(connector.collection, images).then((result: any) => {
+        connector.connection.close();
+
         files.forEach((file: string, index: number) => {
           fs.copyFile(
             datasetFolder + file,
@@ -109,6 +111,7 @@ export class CampaignConnector extends DatabaseConnector {
               }
             )
             .then(res => {
+              databaseConnector.connection.close();
               console.log('Campaign "' + campaign.name + '" initialization process complete.');
             });
         });

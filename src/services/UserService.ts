@@ -36,10 +36,11 @@ export class UserService {
     return new Promise<User>((resolve, reject) => {
       UserConnector.getInstance((db: UserConnector) => {
         db.getByEmail(email).then(result => {
+          db.connection.close();
+
           if (!result) {
             reject(new Error('Could not get user with email: ' + email));
           } else {
-            db.connection.close();
             resolve(result);
           }
         });
