@@ -65,8 +65,18 @@ export class CampaignConnector extends DatabaseConnector {
     const datasetFolder = './datasets/' + campaign.name + '/';
     const uploadsFolder = './uploads/';
 
+    if (!fs.existsSync(datasetFolder)) {
+      console.log('Campaign "' + campaign.name + '" initialization process complete (no folder).');
+      return;
+    }
+
     const files = fs.readdirSync(datasetFolder);
     const campaignId = campaign.id;
+
+    if (files.length <= 0) {
+      console.log('Campaign "' + campaign.name + '" initialization process complete (no data).');
+      return;
+    }
 
     if (!fs.existsSync(uploadsFolder + campaignId)) {
       fs.mkdirSync(uploadsFolder + campaignId);
@@ -86,36 +96,51 @@ export class CampaignConnector extends DatabaseConnector {
         );
       });
 
-      connector.insertMany(connector.collection, images).then((result: any) => {
-        connector.connection.close();
+      connector
+        .insertMany(connector.collection, images)
+        .then((result: any) => {
+          connector.connection.close();
 
-        files.forEach((file: string, index: number) => {
-          fs.copyFile(
-            datasetFolder + file,
-            uploadsFolder + campaign.id + '/' + result.insertedIds[index] + '.jpg',
-            (err: any) => {
-              if (err) {
-                console.error('Error copying ' + file, err);
+          let i = 0;
+          files.forEach((file: string, index: number) => {
+            fs.copyFile(
+              datasetFolder + file,
+              uploadsFolder + campaign.id + '/' + result.insertedIds[index] + '.jpg',
+              (err: any) => {
+                if (err) {
+                  console.error('Error copying ' + file, err);
+                }
               }
+            );
+            i++;
+
+            if (i % 10 && i > 0) {
+              console.log('Copied ' + i + '/' + files.length + ' files.');
             }
-          );
-        });
+          });
 
-        DatabaseConnector.getInstance((databaseConnector: DatabaseConnector) => {
-          databaseConnector
-            .updateDocument(
-              'campaigns',
-              { _id: ObjectID.createFromHexString(campaign.id) },
-              {
-                initialized: true
-              }
-            )
-            .then(res => {
-              databaseConnector.connection.close();
-              console.log('Campaign "' + campaign.name + '" initialization process complete.');
-            });
+          console.log('Preparing to update campaign document of ' + campaign.name);
+          DatabaseConnector.getInstance((databaseConnector: DatabaseConnector) => {
+            databaseConnector
+              .updateDocument(
+                'campaigns',
+                { _id: ObjectID.createFromHexString(campaign.id) },
+                {
+                  initialized: true
+                }
+              )
+              .then(res => {
+                databaseConnector.connection.close();
+                console.log('Campaign "' + campaign.name + '" initialization process complete.');
+              })
+              .catch(err => {
+                console.error('Failed to update campaign document of ' + campaign.name);
+              });
+          });
+        })
+        .catch(err => {
+          console.error('Failed to insert images of ' + campaign.name);
         });
-      });
     });
   }
 
