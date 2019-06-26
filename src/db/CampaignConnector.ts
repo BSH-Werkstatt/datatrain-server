@@ -1,6 +1,13 @@
 import { Campaign } from '../models/campaign';
 import { DatabaseConnector } from './DatabaseConnector';
-import { ObjectID } from 'mongodb';
+import { ObjectID, ObjectId } from 'mongodb';
+import { ImageConnector } from './ImageConnector';
+import { ImageData } from '../models/data';
+import { UserConnector } from './UserConnector';
+import { User } from '../models/user';
+
+import path from 'path';
+import fs from 'fs';
 
 export class CampaignConnector extends DatabaseConnector {
   collection = 'campaigns';
@@ -18,6 +25,95 @@ export class CampaignConnector extends DatabaseConnector {
       .catch(err => {
         console.error('An error occured while connecting to the database: ', err);
       });
+  }
+
+  /**
+   * Initializes the BSH campaigns
+   * @param ms delay in ms
+   */
+  static init() {
+    console.log('--------------------------------------');
+    console.log('--- INITIALIZATION PROCESS STARTED ---');
+    console.log('--------------------------------------');
+
+    const uploadsFolder = './uploads/';
+
+    if (!fs.existsSync(uploadsFolder)) {
+      fs.mkdirSync(uploadsFolder);
+    }
+
+    UserConnector.getInstance((userConnector: UserConnector) => {
+      userConnector.getByEmail('example@website.org').then((user: User) => {
+        console.log('Initializing as user: ' + user.id + ', ' + user.email);
+
+        CampaignConnector.getInstance((connector: CampaignConnector) => {
+          connector.getAll().then((campaigns: Campaign[]) => {
+            console.log('There are ' + campaigns.length + ' campaigns in the database.');
+            campaigns.forEach((campaign: Campaign) => {
+              CampaignConnector.initCampaign(campaign, user.id);
+            });
+          });
+        });
+      });
+    });
+  }
+
+  static initCampaign(campaign: Campaign, userId: string) {
+    // we'll remove this later
+    console.log('Initializing "' + campaign.name + '"...');
+
+    const datasetFolder = './datasets/' + campaign.name + '/';
+    const uploadsFolder = './uploads/';
+
+    const files = fs.readdirSync(datasetFolder);
+    const campaignId = campaign.id;
+
+    if (!fs.existsSync(uploadsFolder + campaignId)) {
+      fs.mkdirSync(uploadsFolder + campaignId);
+    }
+
+    console.log('Found ' + files.length + ' files');
+    ImageConnector.getInstance((connector: ImageConnector) => {
+      const images: object[] = [];
+
+      files.forEach((file: string) => {
+        images.push(
+          ImageData.fromObject({
+            campaignId,
+            userId,
+            annotations: []
+          })
+        );
+      });
+
+      connector.insertMany(connector.collection, images).then((result: any) => {
+        files.forEach((file: string, index: number) => {
+          fs.copyFile(
+            datasetFolder + file,
+            uploadsFolder + campaign.id + '/' + result.insertedIds[index] + '.jpg',
+            (err: any) => {
+              if (err) {
+                console.error('Error copying ' + file, err);
+              }
+            }
+          );
+        });
+
+        DatabaseConnector.getInstance((databaseConnector: DatabaseConnector) => {
+          databaseConnector
+            .updateDocument(
+              'campaigns',
+              { _id: ObjectID.createFromHexString(campaign.id) },
+              {
+                initialized: true
+              }
+            )
+            .then(res => {
+              console.log('Campaign "' + campaign.name + '" initialization process complete.');
+            });
+        });
+      });
+    });
   }
 
   /**

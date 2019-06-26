@@ -6,9 +6,24 @@ import { Campaign } from '../models/campaign';
 import { CampaignService } from '../services/CampaignService';
 import { AnnotationCreationRequest, Annotation } from '../models/annotation';
 import { Leaderboard } from '../models/leaderboard';
+import { CampaignConnector } from '../db/CampaignConnector';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
+  @Get('initialize')
+  public async initialize(): Promise<boolean> {
+    console.log('Initialization triggered.');
+
+    return new Promise<boolean>((resolve, reject) => {
+      try {
+        CampaignConnector.init();
+        resolve(true);
+      } catch (e) {
+        resolve(false);
+      }
+    });
+  }
+
   @Get('{campaignId}')
   public async getCampaign(campaignId: string): Promise<Campaign> {
     return await new CampaignService().get(campaignId);

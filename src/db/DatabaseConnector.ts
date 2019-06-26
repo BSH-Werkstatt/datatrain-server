@@ -1,4 +1,6 @@
 import mongodb from 'mongodb';
+import { CampaignConnector } from './CampaignConnector';
+import { Campaign } from '../models/campaign';
 
 export class DatabaseConnector {
   host: string;
@@ -30,20 +32,6 @@ export class DatabaseConnector {
       .catch(err => {
         console.error('An error occured while connecting to the database: ', err);
       });
-  }
-
-  /**
-   * Initializes the BSH campaigns
-   * @param ms delay in ms
-   */
-  static init() {
-    const testFolder = './datasets/';
-    const fs = require('fs');
-
-    console.log('Reading Files...');
-    fs.readdirSync(testFolder).forEach((file: any) => {
-      console.log(file);
-    });
   }
 
   /**

@@ -18,7 +18,7 @@ services:
     networks:
       - docker-network
     volumes:
-      - ./dataset/:/app/dataset
+      - ./datasets/:/app/datasets
   database_dev:
     image: mongo
     restart: always
