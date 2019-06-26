@@ -33,11 +33,17 @@ export class DatabaseConnector {
   }
 
   /**
-   * Stops the execution of the script for ms miliseconds
+   * Initializes the BSH campaigns
    * @param ms delay in ms
    */
-  sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  static init() {
+    const testFolder = './datasets/';
+    const fs = require('fs');
+
+    console.log('Reading Files...');
+    fs.readdirSync(testFolder).forEach((file: any) => {
+      console.log(file);
+    });
   }
 
   /**

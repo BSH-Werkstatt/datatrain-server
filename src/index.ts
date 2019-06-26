@@ -28,3 +28,5 @@ RegisterRoutes(app);
 
 console.log('Starting server on port ' + port + '...');
 app.listen(port);
+
+DatabaseConnector.init();
