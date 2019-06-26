@@ -7,14 +7,18 @@ export class LeaderboardScore {
    * @isInt score
    */
   score: number;
+  email: string;
+  name: string;
 
-  constructor(userId: string, score: number) {
+  constructor(userId: string, score: number, email: string, name: string) {
     this.userId = userId;
     this.score = score;
+    this.email = email;
+    this.name = name;
   }
 
   static fromObject(object: any): LeaderboardScore {
-    return new LeaderboardScore(object.userId.toString(), object.score);
+    return new LeaderboardScore(object.userId.toString(), object.score, object.email, object.name);
   }
 }
 

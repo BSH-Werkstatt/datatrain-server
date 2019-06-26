@@ -87,14 +87,20 @@ db.leaderboards.insertMany([
     campaignId: campaignsRes.insertedIds[0],
     scores: [
       {
+        name: 'Example Examplovič Examplovski',
+        email: 'example@website.org',
         userId: res.insertedIds[0],
         score: 1000
       },
       {
+        name: 'John Doe',
+        email: 'john.doe@bsh.de',
         userId: res.insertedIds[1],
         score: 500
       },
       {
+        name: 'Jane Smith',
+        email: 'jane.smith@bsh.de',
         userId: res.insertedIds[2],
         score: 250
       }
@@ -104,14 +110,20 @@ db.leaderboards.insertMany([
     campaignId: campaignsRes.insertedIds[1],
     scores: [
       {
+        name: 'Example Examplovič Examplovski',
+        email: 'example@website.org',
         userId: res.insertedIds[0],
-        score: 1000
+        score: 100
       },
       {
+        name: 'John Doe',
+        email: 'john.doe@bsh.de',
         userId: res.insertedIds[1],
         score: 500
       },
       {
+        name: 'Jane Smith',
+        email: 'jane.smith@bsh.de',
         userId: res.insertedIds[2],
         score: 250
       }
@@ -121,14 +133,20 @@ db.leaderboards.insertMany([
     campaignId: campaignsRes.insertedIds[2],
     scores: [
       {
+        name: 'Example Examplovič Examplovski',
+        email: 'example@website.org',
         userId: res.insertedIds[0],
         score: 1000
       },
       {
+        name: 'John Doe',
+        email: 'john.doe@bsh.de',
         userId: res.insertedIds[1],
-        score: 500
+        score: 5000
       },
       {
+        name: 'Jane Smith',
+        email: 'jane.smith@bsh.de',
         userId: res.insertedIds[2],
         score: 250
       }
@@ -138,16 +156,22 @@ db.leaderboards.insertMany([
     campaignId: campaignsRes.insertedIds[3],
     scores: [
       {
+        name: 'Example Examplovič Examplovski',
+        email: 'example@website.org',
         userId: res.insertedIds[0],
         score: 1000
       },
       {
+        name: 'John Doe',
+        email: 'john.doe@bsh.de',
         userId: res.insertedIds[1],
         score: 500
       },
       {
+        name: 'Jane Smith',
+        email: 'jane.smith@bsh.de',
         userId: res.insertedIds[2],
-        score: 250
+        score: 2500
       }
     ]
   }
