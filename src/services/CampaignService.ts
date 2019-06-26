@@ -142,22 +142,27 @@ export class CampaignService {
    * @param imageId Identifier of the image to which the annotation belongs to
    * @param request Express request with the rest of the form data (user etc.)
    */
-  uploadAnnotation(campaignId: string, imageId: string, request: AnnotationCreationRequest): Promise<Annotation> {
+  uploadAnnotations(campaignId: string, imageId: string, request: AnnotationCreationRequest): Promise<Annotation> {
     return new Promise((resolve, reject) => {
       const userId = UserService.getUserIdFromToken(request.userToken);
+      const annotations: Annotation[] = [];
 
-      const annotation = new Annotation(
-        this.getAnnotationId(),
-        request.points,
-        userId,
-        request.type,
-        request.label,
-        campaignId,
-        imageId
-      );
+      request.items.forEach((item: any) => {
+        const annotation = new Annotation(
+          this.getAnnotationId(),
+          item.points,
+          userId,
+          item.type,
+          item.label,
+          campaignId,
+          imageId
+        );
 
-      annotation.save((res: any) => {
-        this.addLeaderboardScoreToUser(campaignId, userId, 1);
+        annotations.push(annotation);
+      });
+
+      Annotation.saveMany(imageId, annotations, (res: any) => {
+        this.addLeaderboardScoreToUser(campaignId, userId, annotations.length);
 
         if (res) {
           resolve(res);
