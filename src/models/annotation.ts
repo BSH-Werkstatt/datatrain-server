@@ -39,6 +39,16 @@ export class Annotation {
     );
   }
 
+  static saveMany(imageId: string, annotations: Annotation[], callback: any) {
+    ImageConnector.getInstance((connector: ImageConnector) => {
+      connector.saveAnnotations(imageId, annotations).then(res => {
+        connector.connection.close();
+
+        callback(annotations);
+      });
+    });
+  }
+
   save(callback: any) {
     ImageConnector.getInstance((connector: ImageConnector) => {
       connector.saveAnnotation(this).then(res => {
@@ -51,10 +61,14 @@ export class Annotation {
 }
 
 export interface AnnotationCreationRequest {
+  items: AnnotationCreationRequestItem[];
+  userToken: string;
+}
+
+export interface AnnotationCreationRequestItem {
   points: Point[];
   type: string;
   label: string;
-  userToken: string;
 }
 
 export interface Point {

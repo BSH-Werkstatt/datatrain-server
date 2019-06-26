@@ -97,4 +97,22 @@ export class ImageConnector extends DatabaseConnector {
       );
     });
   }
+
+  saveAnnotations(imageId: string, annotations: Annotation[]) {
+    return new Promise<object>((resolve, reject) => {
+      const col = this.db.collection(this.collection);
+
+      col.updateOne(
+        { _id: ObjectID.createFromHexString(imageId) },
+        { $push: { annotations: { $each: annotations } } },
+        (err: any, result: any) => {
+          if (err) {
+            reject(err);
+          }
+
+          resolve(result);
+        }
+      );
+    });
+  }
 }
