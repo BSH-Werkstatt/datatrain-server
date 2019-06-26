@@ -25,10 +25,11 @@ export class CampaignService {
     const promise = new Promise<Campaign>((resolve, reject) => {
       CampaignConnector.getInstance((db: CampaignConnector) => {
         db.get(id).then(result => {
+          db.connection.close();
+
           if (!result) {
             reject(new Error('Could not get campaign with id: ' + id));
           } else {
-            db.connection.close();
             resolve(result);
           }
         });
@@ -45,10 +46,11 @@ export class CampaignService {
     const promise = new Promise<Campaign[]>((resolve, reject) => {
       CampaignConnector.getInstance((db: CampaignConnector) => {
         db.getAll().then(result => {
+          db.connection.close();
+
           if (!result) {
             reject(new Error('Could not get all campaigns'));
           } else {
-            db.connection.close();
             resolve(result);
           }
         });
@@ -110,6 +112,8 @@ export class CampaignService {
       ImageConnector.getInstance((db: ImageConnector) => {
         // not the most efficient, but will get the job done before we write something better, TODO
         db.getAllOfCampaign(campaignId).then(result => {
+          db.connection.close();
+
           if (!result) {
             reject(new Error('Could not get images of campaign'));
           } else {
@@ -183,6 +187,8 @@ export class CampaignService {
       ImageConnector.getInstance((db: ImageConnector) => {
         // not the most efficient, but will get the job done before we write something better, TODO
         db.getAllOfCampaign(campaignId).then(result => {
+          db.connection.close();
+
           if (!result) {
             reject(new Error('Could not get images of campaign'));
           } else {
@@ -202,6 +208,8 @@ export class CampaignService {
       LeaderboardConnector.getInstance((db: LeaderboardConnector) => {
         // not the most efficient, but will get the job done before we write something better, TODO
         db.get(campaignId).then(result => {
+          db.connection.close();
+
           if (!result) {
             reject(new Error('Could not get leaderboard of campaign'));
           } else {
@@ -221,6 +229,8 @@ export class CampaignService {
     LeaderboardConnector.getInstance((db: LeaderboardConnector) => {
       db.get(campaignId)
         .then((res: Leaderboard) => {
+          db.connection.close();
+
           const leaderboard = res;
           leaderboard.addScoreToUser(userId, score);
           leaderboard.save(() => {

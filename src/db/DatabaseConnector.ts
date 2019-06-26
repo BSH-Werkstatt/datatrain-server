@@ -1,4 +1,6 @@
 import mongodb from 'mongodb';
+import { CampaignConnector } from './CampaignConnector';
+import { Campaign } from '../models/campaign';
 
 export class DatabaseConnector {
   host: string;
@@ -30,14 +32,6 @@ export class DatabaseConnector {
       .catch(err => {
         console.error('An error occured while connecting to the database: ', err);
       });
-  }
-
-  /**
-   * Stops the execution of the script for ms miliseconds
-   * @param ms delay in ms
-   */
-  sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

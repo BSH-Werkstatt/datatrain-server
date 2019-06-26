@@ -8,7 +8,7 @@ import './db/DatabaseConnector';
 
 // @ts-ignore
 import { RegisterRoutes } from './routes';
-import { DatabaseConnector } from './db/DatabaseConnector';
+import { CampaignConnector } from './db/CampaignConnector';
 const port = process.env.PORT || 5000;
 
 const app = express();

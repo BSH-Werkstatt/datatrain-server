@@ -11,7 +11,16 @@ db.createUser({
 
 var res = db.users.insertMany([
   {
+    name: 'Example Examplovič Examplovski',
     email: 'example@website.org'
+  },
+  {
+    name: 'John Doe',
+    email: 'john.doe@bsh.de'
+  },
+  {
+    name: 'Jane Smith',
+    email: 'jane.smith@bsh.de'
   }
 ]);
 
@@ -19,121 +28,57 @@ var campaignsRes = db.campaigns.insertMany([
   {
     ownerId: res.insertedIds[0],
     type: 0,
-    name: 'Fruit Campaign',
+    name: 'Fridge Campaign',
     description:
-      'The campaign is all about fruits!\n\nWe need as many bananas, apples, oranges etc. as we can find. Please upload every fruit you see.\n\nThere are \
-about 110 different species of banana. In popular culture and commerce, "banana" usually refers to the soft and sweet kind, \
-also known as dessert bananas. Other kinds, or cultivars, of banana have a firmer, starchier fruit. Those are usually called \
-plantains. Plantains are mostly used for cooking or fibre.',
-    taxonomy: ['Banana', 'Kiwi', 'Lime'],
-    image: 'https://www.organicfacts.net/wp-content/uploads/banana.jpg'
+      "In this campagin, we're asking you to label as many images of fridge contents as you can!\n\n\
+      We preparetd some images for you, but feel free to take pictures of any fridge you find and annotate it!",
+    taxonomy: [
+      'Tomato',
+      'Lime',
+      'Kohlrabi',
+      'Kiwi',
+      'Iceberg Lettuce',
+      'Ginger',
+      'Eggplant',
+      'Cucumber',
+      'Cauliflower',
+      'Banana'
+    ],
+    image: 'https://media.mnn.com/assets/images/2018/11/inside_refrigerator.jpg.653x0_q80_crop-smart.jpg',
+    initialized: false
   },
   {
     ownerId: res.insertedIds[0],
     type: 0,
-    name: 'Washing Machine Campaign',
+    name: 'Washing Machines and Control Panels',
     description:
       'When something is made with the utmost care, it shows. At Bosch, the same thoughtful attention to detail begins in our \
 factories where we test, inspect and perfect every last detail of our dishwashers.',
     taxonomy: ['Washing Machine', 'Control Panel'],
-    image: 'https://media3.bosch-home.com/Images/600x/MCIM02055360_Bosch-service-Dishwasher-Support_1600x.jpg'
+    image: 'https://media3.bosch-home.com/Images/600x/MCIM02055360_Bosch-service-Dishwasher-Support_1600x.jpg',
+    initialized: false
+  },
+  {
+    ownerId: res.insertedIds[0],
+    type: 0,
+    name: 'Washing Machines and Dryers',
+    description:
+      'When something is made with the utmost care, it shows. At Bosch, the same thoughtful attention to detail begins in our \
+factories where we test, inspect and perfect every last detail of our dishwashers.',
+    taxonomy: ['Washing Machine', 'Dryer'],
+    image:
+      'https://www.appliancesonline.com.au/public/images/product/wtw87565au/external/9kg-Bosch-Heat-Pump-Dryer-WTW87565AU-high.jpeg',
+    initialized: false
   },
   {
     ownerId: res.insertedIds[0],
     type: 0,
     name: 'Tableware Campaign',
-    description: 'Plates, Forks, Mugs...',
-    taxonomy: ['sensitive', 'nonDiswasherSafe', 'intensive'],
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Formal_01.jpg/220px-Formal_01.jpg'
-  },
-  {
-    ownerId: res.insertedIds[0],
-    type: 0,
-    name: 'Coco',
-    description: 'Plates, Forks, Mugs...',
-    taxonomy: [
-      'person',
-      'bicycle',
-      'car',
-      'motorcycle',
-      'airplane',
-      'bus',
-      'train',
-      'truck',
-      'boat',
-      'traffic light',
-      'fire hydrant',
-      'stop sign',
-      'parking meter',
-      'bench',
-      'bird',
-      'cat',
-      'dog',
-      'horse',
-      'sheep',
-      'cow',
-      'elephant',
-      'bear',
-      'zebra',
-      'giraffe',
-      'backpack',
-      'umbrella',
-      'handbag',
-      'tie',
-      'suitcase',
-      'frisbee',
-      'skis',
-      'snowboard',
-      'sports ball',
-      'kite',
-      'baseball bat',
-      'baseball glove',
-      'skateboard',
-      'surfboard',
-      'tennis racket',
-      'bottle',
-      'wine glass',
-      'cup',
-      'fork',
-      'knife',
-      'spoon',
-      'bowl',
-      'banana',
-      'apple',
-      'sandwich',
-      'orange',
-      'broccoli',
-      'carrot',
-      'hot dog',
-      'pizza',
-      'donut',
-      'cake',
-      'chair',
-      'couch',
-      'potted plant',
-      'bed',
-      'dining table',
-      'toilet',
-      'tv',
-      'laptop',
-      'mouse',
-      'remote',
-      'keyboard',
-      'cell phone',
-      'microwave',
-      'oven',
-      'toaster',
-      'sink',
-      'refrigerator',
-      'book',
-      'clock',
-      'vase',
-      'scissors',
-      'teddy bear',
-      'hair drier',
-      'toothbrush'
-    ],
-    image: 'http://cocodataset.org/images/coco-logo.png'
+    description:
+      'Help us recognize what kind of tableware is sensitive, requires intensive cleaning or is non-dishwasher safe.',
+    taxonomy: ['Sensitive', 'Non-Diswasher Safe', 'Intensive'],
+    image: 'https://media3.bosch-home.com/Images/600x/MCIM02055360_Bosch-service-Dishwasher-Support_1600x.jpg',
+    initialized: false
   }
 ]);
 
@@ -144,6 +89,14 @@ db.leaderboards.insertMany([
       {
         userId: res.insertedIds[0],
         score: 1000
+      },
+      {
+        userId: res.insertedIds[1],
+        score: 500
+      },
+      {
+        userId: res.insertedIds[2],
+        score: 250
       }
     ]
   },
@@ -153,6 +106,48 @@ db.leaderboards.insertMany([
       {
         userId: res.insertedIds[0],
         score: 1000
+      },
+      {
+        userId: res.insertedIds[1],
+        score: 500
+      },
+      {
+        userId: res.insertedIds[2],
+        score: 250
+      }
+    ]
+  },
+  {
+    campaignId: campaignsRes.insertedIds[2],
+    scores: [
+      {
+        userId: res.insertedIds[0],
+        score: 1000
+      },
+      {
+        userId: res.insertedIds[1],
+        score: 500
+      },
+      {
+        userId: res.insertedIds[2],
+        score: 250
+      }
+    ]
+  },
+  {
+    campaignId: campaignsRes.insertedIds[3],
+    scores: [
+      {
+        userId: res.insertedIds[0],
+        score: 1000
+      },
+      {
+        userId: res.insertedIds[1],
+        score: 500
+      },
+      {
+        userId: res.insertedIds[2],
+        score: 250
       }
     ]
   }

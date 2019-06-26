@@ -17,6 +17,8 @@ services:
       - '5000:5000'
     networks:
       - docker-network
+    volumes:
+      - ./datasets/:/app/datasets
   database_dev:
     image: mongo
     restart: always
