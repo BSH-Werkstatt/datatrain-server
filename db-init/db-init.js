@@ -3,8 +3,8 @@ var userObjects = [];
 
 for (var i = 0; i < users.length; i++) {
   userObjects.push({
-    name: users[i].split('@')[0],
-    email: users[i]
+    name: users[i].toLowerCase().split('@')[0],
+    email: users[i].toLowerCase()
   });
 }
 
