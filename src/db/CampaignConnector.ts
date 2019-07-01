@@ -43,7 +43,7 @@ export class CampaignConnector extends DatabaseConnector {
     }
 
     UserConnector.getInstance((userConnector: UserConnector) => {
-      userConnector.getByEmail('example@website.org').then((user: User) => {
+      userConnector.getByEmail('admin.admin@bshg.com').then((user: User) => {
         console.log('Initializing as user: ' + user.id + ', ' + user.email);
 
         CampaignConnector.getInstance((connector: CampaignConnector) => {
