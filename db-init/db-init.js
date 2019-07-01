@@ -1,3 +1,13 @@
+var users = ['admin.admin@bshg.com', 'taylor.lei@tum.de', 'ipraktikum.bsh@tum.de'];
+var userObjects = [];
+
+for (var i = 0; i < users.length; i++) {
+  userObjects.push({
+    name: users[i].toLowerCase().split('@')[0],
+    email: users[i].toLowerCase()
+  });
+}
+
 db.createUser({
   user: 'datatrain',
   pwd: 'init12345',
@@ -9,20 +19,12 @@ db.createUser({
   ]
 });
 
-var res = db.users.insertMany([
-  {
-    name: 'Example Examplovič Examplovski',
-    email: 'example@website.org'
-  },
-  {
-    name: 'John Doe',
-    email: 'john.doe@bsh.de'
-  },
-  {
-    name: 'Jane Smith',
-    email: 'jane.smith@bsh.de'
-  }
-]);
+var res = db.users.insertMany(userObjects);
+
+for (var i = 0; i < users.length; i++) {
+  userObjects[i].userId = res.insertedIds[i];
+  userObjects[i].score = 0;
+}
 
 var campaignsRes = db.campaigns.insertMany([
   {
@@ -85,94 +87,18 @@ factories where we test, inspect and perfect every last detail of our dishwasher
 db.leaderboards.insertMany([
   {
     campaignId: campaignsRes.insertedIds[0],
-    scores: [
-      {
-        name: 'Example Examplovič Examplovski',
-        email: 'example@website.org',
-        userId: res.insertedIds[0],
-        score: 1000
-      },
-      {
-        name: 'John Doe',
-        email: 'john.doe@bsh.de',
-        userId: res.insertedIds[1],
-        score: 500
-      },
-      {
-        name: 'Jane Smith',
-        email: 'jane.smith@bsh.de',
-        userId: res.insertedIds[2],
-        score: 250
-      }
-    ]
+    scores: userObjects
   },
   {
     campaignId: campaignsRes.insertedIds[1],
-    scores: [
-      {
-        name: 'Example Examplovič Examplovski',
-        email: 'example@website.org',
-        userId: res.insertedIds[0],
-        score: 100
-      },
-      {
-        name: 'John Doe',
-        email: 'john.doe@bsh.de',
-        userId: res.insertedIds[1],
-        score: 500
-      },
-      {
-        name: 'Jane Smith',
-        email: 'jane.smith@bsh.de',
-        userId: res.insertedIds[2],
-        score: 250
-      }
-    ]
+    scores: userObjects
   },
   {
     campaignId: campaignsRes.insertedIds[2],
-    scores: [
-      {
-        name: 'Example Examplovič Examplovski',
-        email: 'example@website.org',
-        userId: res.insertedIds[0],
-        score: 1000
-      },
-      {
-        name: 'John Doe',
-        email: 'john.doe@bsh.de',
-        userId: res.insertedIds[1],
-        score: 5000
-      },
-      {
-        name: 'Jane Smith',
-        email: 'jane.smith@bsh.de',
-        userId: res.insertedIds[2],
-        score: 250
-      }
-    ]
+    scores: userObjects
   },
   {
     campaignId: campaignsRes.insertedIds[3],
-    scores: [
-      {
-        name: 'Example Examplovič Examplovski',
-        email: 'example@website.org',
-        userId: res.insertedIds[0],
-        score: 1000
-      },
-      {
-        name: 'John Doe',
-        email: 'john.doe@bsh.de',
-        userId: res.insertedIds[1],
-        score: 500
-      },
-      {
-        name: 'Jane Smith',
-        email: 'jane.smith@bsh.de',
-        userId: res.insertedIds[2],
-        score: 2500
-      }
-    ]
+    scores: userObjects
   }
 ]);
