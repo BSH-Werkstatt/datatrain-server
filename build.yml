@@ -2,8 +2,8 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: 'datatrain/ml'
-    IMAGE_TAG: 'api'
+    IMAGE_REPO_NAME: 'datatrain/api'
+    IMAGE_TAG: 'staging'
     AWS_ACCOUNT_ID: '802162369613'
 # parameter-store:
 #   key: "value"
