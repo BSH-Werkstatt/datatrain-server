@@ -4,6 +4,7 @@ env:
   variables:
     IMAGE_REPO_NAME: 'datatrain/ml'
     IMAGE_TAG: 'api'
+    AWS_ACCOUNT_ID: '802162369613'
 # parameter-store:
 #   key: "value"
 #   key: "value"
