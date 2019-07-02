@@ -50,7 +50,9 @@ export class LeaderboardConnector extends DatabaseConnector {
     leaderboard.scores.forEach(e => {
       scores.push({
         userId: ObjectId.createFromHexString(e.userId),
-        score: e.score
+        score: e.score,
+        email: e.email ? e.email : 'unknown',
+        name: e.name ? e.name : 'unknown'
       });
     });
 
