@@ -1,9 +1,9 @@
 version: 0.2
 
-# env:
-# variables:
-#   key: "value"
-#   key: "value"
+env:
+variables:
+  IMAGE_REPO_NAME: 'datatrain/ml'
+  IMAGE_TAG: 'api'
 # parameter-store:
 #   key: "value"
 #   key: "value"
