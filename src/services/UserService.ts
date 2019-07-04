@@ -20,7 +20,7 @@ export class UserService {
     return new Promise<User>((resolve, reject) => {
       console.log(request, request.email);
 
-      const user = new User('', request.email);
+      const user = new User('', request.email, request.name);
       user.save((res: User) => {
         console.log(res, user);
         resolve(res);
