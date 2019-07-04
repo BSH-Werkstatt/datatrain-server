@@ -47,7 +47,8 @@ export class UserConnector extends DatabaseConnector {
    */
   save(user: User): Promise<any> {
     const self = {
-      email: user.email
+      email: user.email,
+      name: user.name
     };
 
     if (user.id) {

@@ -3,14 +3,16 @@ import { UserConnector } from '../db/UserConnector';
 export class User {
   id: string;
   email: string;
+  name: string;
 
-  constructor(id: string, email: string) {
+  constructor(id: string, email: string, name: string) {
     this.id = id;
     this.email = email;
+    this.name = name;
   }
 
   static fromObject(object: any) {
-    return new User(object._id ? object._id.toString() : object.id, object.email);
+    return new User(object._id ? object._id.toString() : object.id, object.email, object.name);
   }
 
   save(callback: any) {
@@ -29,4 +31,5 @@ export class User {
 
 export interface CreateUserRequest {
   email: string;
+  name: string;
 }
