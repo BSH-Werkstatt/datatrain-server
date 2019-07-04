@@ -39,7 +39,7 @@ export class UserService {
           db.connection.close();
 
           if (!result) {
-            resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
+            resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
           } else {
             resolve(result);
           }
