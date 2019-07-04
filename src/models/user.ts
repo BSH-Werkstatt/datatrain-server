@@ -31,4 +31,5 @@ export class User {
 
 export interface CreateUserRequest {
   email: string;
+  name: string;
 }
