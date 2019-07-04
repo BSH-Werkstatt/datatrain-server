@@ -40,6 +40,28 @@ export class CampaignService {
   }
 
   /**
+   * Returns the Campaign with the given url name, if it does not exist, an error will be raised
+   * @param urlName url name of the campaign
+   */
+  getByURLName(urlName: string): Promise<Campaign> {
+    const promise = new Promise<Campaign>((resolve, reject) => {
+      CampaignConnector.getInstance((db: CampaignConnector) => {
+        db.getByURLName(urlName).then(result => {
+          db.connection.close();
+
+          if (!result) {
+            reject(new Error('Could not get campaign with id: ' + urlName));
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    });
+
+    return promise;
+  }
+
+  /**
    * Returns all campaigns as an array of Campaign objects
    */
   getAll(): Promise<Campaign[]> {

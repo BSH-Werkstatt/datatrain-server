@@ -165,6 +165,26 @@ export class CampaignConnector extends DatabaseConnector {
   }
 
   /**
+   * Returns the campaign with the url name
+   * @param urlName campaign url name
+   */
+  getByURLName(urlName: string): Promise<Campaign> {
+    return new Promise((resolve, reject) => {
+      this.findOne(this.collection, { urlName })
+        .then(result => {
+          if (result) {
+            resolve(Campaign.fromObject(result));
+          } else {
+            resolve(null);
+          }
+        })
+        .catch(err => {
+          console.error('Error while getting campaign with url name ' + urlName, err);
+        });
+    });
+  }
+
+  /**
    * Returns all campaigns
    */
   getAll(): Promise<Campaign[]> {

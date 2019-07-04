@@ -6,6 +6,7 @@ export class Campaign {
    */
   type: CampaignType;
   name: string;
+  urlName: string;
   description: string;
   taxonomy: string[];
   image: string;
@@ -15,6 +16,7 @@ export class Campaign {
     ownerId: string,
     type: CampaignType,
     name: string,
+    urlName: string,
     description: string,
     taxonomy: string[],
     image: string
@@ -23,6 +25,7 @@ export class Campaign {
     this.ownerId = ownerId;
     this.type = type;
     this.name = name;
+    this.urlName = urlName;
     this.description = description;
     this.taxonomy = taxonomy;
     this.image = image;
@@ -34,6 +37,7 @@ export class Campaign {
       object.ownerId,
       object.type,
       object.name,
+      object.urlName,
       object.description,
       object.taxonomy,
       object.image
