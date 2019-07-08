@@ -20,7 +20,7 @@ export class UserService {
     return new Promise<User>((resolve, reject) => {
       console.log(request, request.email);
 
-      const user = new User('', request.email);
+      const user = new User('', request.email, request.name);
       user.save((res: User) => {
         console.log(res, user);
         resolve(res);
@@ -39,7 +39,7 @@ export class UserService {
           db.connection.close();
 
           if (!result) {
-            resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
+            resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
           } else {
             resolve(result);
           }
