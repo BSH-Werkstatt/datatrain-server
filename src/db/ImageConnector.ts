@@ -2,6 +2,7 @@ import { DatabaseConnector } from './DatabaseConnector';
 import { ImageData } from '../models/data';
 import { ObjectID } from 'mongodb';
 import { Annotation } from '../models/annotation';
+import { DBConfig } from './dbconfig';
 
 export class ImageConnector extends DatabaseConnector {
   collection = 'images';
@@ -11,14 +12,19 @@ export class ImageConnector extends DatabaseConnector {
    */
   static getInstance(callback: any) {
     // TODO: store in environmental variables
-    const db = new ImageConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
-    db.connect()
-      .then(res => {
-        callback(db);
-      })
-      .catch(err => {
-        console.error('An error occured while connecting to the database: ', err);
-      });
+    try {
+      const db = new ImageConnector(DBConfig.host, DBConfig.database, DBConfig.user, DBConfig.password);
+      db.connect()
+        .then(res => {
+          callback(db);
+          // db.connection.close();
+        })
+        .catch(err => {
+          console.error('An error occured while connecting to the database: ', err);
+        });
+    } catch (e) {
+      console.error("Error while connecting, maybe database hasn't been started yet?", e);
+    }
   }
 
   /**

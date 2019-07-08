@@ -1,6 +1,7 @@
 import { DatabaseConnector } from './DatabaseConnector';
 import { ObjectId } from 'mongodb';
 import { User } from '../models/user';
+import { DBConfig } from './dbconfig';
 
 export class UserConnector extends DatabaseConnector {
   collection = 'users';
@@ -10,15 +11,19 @@ export class UserConnector extends DatabaseConnector {
    */
   static getInstance(callback: any) {
     // TODO: store in environmental variables
-    const db = new UserConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
-    db.connect()
-      .then(res => {
-        callback(db);
-        db.connection.close();
-      })
-      .catch(err => {
-        console.error('An error occured while connecting to the database: ', err);
-      });
+    try {
+      const db = new UserConnector(DBConfig.host, DBConfig.database, DBConfig.user, DBConfig.password);
+      db.connect()
+        .then(res => {
+          callback(db);
+          // db.connection.close();
+        })
+        .catch(err => {
+          console.error('An error occured while connecting to the database: ', err);
+        });
+    } catch (e) {
+      console.error("Error while connecting, maybe database hasn't been started yet?", e);
+    }
   }
 
   /**

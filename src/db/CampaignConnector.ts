@@ -5,6 +5,7 @@ import { ImageConnector } from './ImageConnector';
 import { ImageData } from '../models/data';
 import { UserConnector } from './UserConnector';
 import { User } from '../models/user';
+import { DBConfig } from './dbconfig';
 
 import path from 'path';
 import fs from 'fs';
@@ -17,14 +18,18 @@ export class CampaignConnector extends DatabaseConnector {
    */
   static getInstance(callback: any) {
     // TODO: store in environmental variables
-    const db = new CampaignConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
-    db.connect()
-      .then(res => {
-        callback(db);
-      })
-      .catch(err => {
-        console.error('An error occured while connecting to the database: ', err);
-      });
+    try {
+      const db = new CampaignConnector(DBConfig.host, DBConfig.database, DBConfig.user, DBConfig.password);
+      db.connect()
+        .then(res => {
+          callback(db);
+        })
+        .catch(err => {
+          console.error('An error occured while connecting to the database: ', err);
+        });
+    } catch (e) {
+      console.error("Error while connecting, maybe database hasn't been started yet?", e);
+    }
   }
 
   /**

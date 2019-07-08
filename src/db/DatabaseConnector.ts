@@ -1,6 +1,7 @@
 import mongodb from 'mongodb';
 import { CampaignConnector } from './CampaignConnector';
 import { Campaign } from '../models/campaign';
+import { DBConfig } from './dbconfig';
 
 export class DatabaseConnector {
   host: string;
@@ -23,15 +24,19 @@ export class DatabaseConnector {
    * @param callback callback function which takes the DatabaseConnector instance as an argument
    */
   static getInstance(callback: any) {
-    const db = new DatabaseConnector('database_dev', 'datatrain', 'datatrain', 'init12345');
-    db.connect()
-      .then(res => {
-        callback(db);
-        // db.connection.close();
-      })
-      .catch(err => {
-        console.error('An error occured while connecting to the database: ', err);
-      });
+    try {
+      const db = new DatabaseConnector(DBConfig.host, DBConfig.database, DBConfig.user, DBConfig.password);
+      db.connect()
+        .then(res => {
+          callback(db);
+          // db.connection.close();
+        })
+        .catch(err => {
+          console.error('An error occured while connecting to the database: ', err);
+        });
+    } catch (e) {
+      console.error("Error while connecting, maybe database hasn't been started yet?", e);
+    }
   }
 
   /**
@@ -49,8 +54,12 @@ export class DatabaseConnector {
         }
 
         this.connection = db;
-        this.db = db.db(this.database);
-        resolve(this.db);
+        if (!db) {
+          reject(new Error('No connection established'));
+        } else {
+          this.db = db.db(this.database);
+          resolve(this.db);
+        }
       });
     });
   }
