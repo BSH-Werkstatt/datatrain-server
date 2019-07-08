@@ -1,5 +1,6 @@
 import './controller/CampaignsController';
 import './controller/UsersController';
+import './controller/HealthcheckController';
 
 import bodyParser from 'body-parser';
 import express from 'express';
