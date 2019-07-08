@@ -30,6 +30,11 @@ export class CampaignsController extends Controller {
     return await new CampaignService().get(campaignId);
   }
 
+  @Get('byURLName/{campaignName}')
+  public async getCampaignByURLName(campaignName: string): Promise<Campaign> {
+    return await new CampaignService().getByURLName(campaignName);
+  }
+
   @Get('')
   public async getAllCampaigns(): Promise<Campaign[]> {
     return await new CampaignService().getAll();

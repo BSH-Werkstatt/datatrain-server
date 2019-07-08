@@ -39,7 +39,7 @@ export class UserService {
           db.connection.close();
 
           if (!result) {
-            reject(new Error('Could not get user with email: ' + email));
+            resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
           } else {
             resolve(result);
           }
