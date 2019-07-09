@@ -6,9 +6,12 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import methodOverride from 'method-override';
 import './db/DatabaseConnector';
+import dotenv from 'dotenv';
 
 // @ts-ignore
 import { RegisterRoutes } from './routes';
+
+dotenv.config();
 const port = process.env.PORT || 5000;
 
 const app = express();
