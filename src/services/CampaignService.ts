@@ -15,6 +15,7 @@ import { LeaderboardConnector } from '../db/LeaderboardConnector';
 import http from 'http';
 import fs from 'fs';
 import { PredictionResult } from '../models/prediction';
+import { S3ImageService } from './S3ImageService';
 
 export class CampaignService {
   /**
@@ -94,7 +95,7 @@ export class CampaignService {
       const userToken = request.query.userToken;
       const userId = UserService.getUserIdFromToken(userToken);
 
-      const image = new ImageData('', campaignId, userId, []);
+      const image = new ImageData('', campaignId, userId, [], '');
       image.save((imageData: ImageData) => {
         const imageId = imageData.id;
 
@@ -104,8 +105,15 @@ export class CampaignService {
           // TODO: directory in a constant
           destination: __dirname + '/../uploads/' + campaignId + '/',
           filename: (req, file, callback) => {
-            const filename = file.originalname;
-            const ext = path.extname(filename);
+            const ext = '.jpg';
+
+            if (
+              path.extname(file.originalname).toLowerCase() !== '.jpg' &&
+              path.extname(file.originalname).toLowerCase() !== '.jpeg'
+            ) {
+              reject('Wrong file extension.');
+            }
+
             callback(null, imageId + ext);
           }
         });
@@ -116,9 +124,26 @@ export class CampaignService {
           if (error) {
             reject(error);
           }
-          this.addLeaderboardScoreToUser(campaignId, userId, 1);
 
-          resolve(imageData);
+          this.addLeaderboardScoreToUser(campaignId, userId, 1);
+          const s3 = new S3ImageService();
+
+          const filename = __dirname + '/../uploads/' + campaignId + '/' + imageId + '.jpg';
+          s3.uploadImageByPath(filename, imageId)
+            .then(url => {
+              image.url = url;
+              image.id = imageId;
+              image.save((result: any) => {
+                resolve(imageData);
+              });
+
+              fs.unlink(filename, () => {
+                console.log('Tmp file deleted.');
+              });
+            })
+            .catch(err => {
+              console.error('Error while uploading image: ', err);
+            });
         });
       });
     });

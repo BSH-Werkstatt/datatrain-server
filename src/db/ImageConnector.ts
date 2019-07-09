@@ -72,7 +72,8 @@ export class ImageConnector extends DatabaseConnector {
     const self = {
       campaignId: image.campaignId,
       userId: image.userId,
-      annotations: image.annotations
+      annotations: image.annotations,
+      url: image.url
     };
 
     if (image.id) {

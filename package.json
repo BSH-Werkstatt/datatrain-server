@@ -25,6 +25,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "@types/body-parser": "^1.17.0",
     "@types/dotenv": "^6.1.1",
     "@types/method-override": "^0.0.31",
