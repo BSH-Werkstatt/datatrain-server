@@ -1,4 +1,5 @@
 import { ImageConnector } from '../db/ImageConnector';
+import dateFormat from 'dateformat';
 
 export class Annotation {
   id: string;
@@ -8,6 +9,7 @@ export class Annotation {
   userId: string;
   campaignId: string;
   imageId: string;
+  timestamp?: string;
 
   constructor(
     id: string,
@@ -16,7 +18,8 @@ export class Annotation {
     label: string,
     userId: string,
     campaignId: string,
-    imageId: string
+    imageId: string,
+    timestamp?: string
   ) {
     this.id = id;
     this.points = points;
@@ -25,6 +28,8 @@ export class Annotation {
     this.userId = userId;
     this.campaignId = campaignId;
     this.imageId = imageId;
+
+    this.timestamp = timestamp ? timestamp : dateFormat(new Date(), 'isoDateTime');
   }
 
   static fromObject(object: any): Annotation {
@@ -35,7 +40,8 @@ export class Annotation {
       object.label,
       object.userId,
       object.campaignId,
-      object.imageId
+      object.imageId,
+      object.timestamp ? object.timestamp : dateFormat(new Date(), 'isoDateTime')
     );
   }
 

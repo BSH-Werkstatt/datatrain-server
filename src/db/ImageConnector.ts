@@ -49,7 +49,7 @@ export class ImageConnector extends DatabaseConnector {
 
   getAllOfCampaign(campaignId: string): Promise<ImageData[]> {
     return new Promise((resolve, reject) => {
-      this.find(this.collection, { campaignId })
+      this.find(this.collection, { campaignId: ObjectID.createFromHexString(campaignId) })
         .then(result => {
           const images: ImageData[] = [];
           result.forEach(e => {
@@ -70,9 +70,11 @@ export class ImageConnector extends DatabaseConnector {
    */
   save(image: ImageData): Promise<any> {
     const self = {
-      campaignId: image.campaignId,
-      userId: image.userId,
-      annotations: image.annotations
+      campaignId: ObjectID.createFromHexString(image.campaignId),
+      userId: ObjectID.createFromHexString(image.userId),
+      annotations: image.annotations,
+      url: image.url,
+      timestamp: image.timestamp
     };
 
     if (image.id) {

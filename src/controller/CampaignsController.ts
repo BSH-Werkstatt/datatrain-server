@@ -8,6 +8,7 @@ import { AnnotationCreationRequest, Annotation } from '../models/annotation';
 import { Leaderboard } from '../models/leaderboard';
 import { CampaignConnector } from '../db/CampaignConnector';
 import { PredictionResult } from '../models/prediction';
+import { Initializer } from '../db/Initializer';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
@@ -17,7 +18,7 @@ export class CampaignsController extends Controller {
 
     return new Promise<boolean>((resolve, reject) => {
       try {
-        CampaignConnector.init();
+        Initializer.init();
         resolve(true);
       } catch (e) {
         resolve(false);
