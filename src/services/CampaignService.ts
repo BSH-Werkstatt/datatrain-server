@@ -18,6 +18,7 @@ import { PredictionResult } from '../models/prediction';
 import { S3ImageService } from './S3ImageService';
 
 import dateFormat from 'dateformat';
+import jo from 'jpeg-autorotate';
 
 export class CampaignService {
   /**
@@ -131,7 +132,39 @@ export class CampaignService {
           const s3 = new S3ImageService();
 
           const filename = __dirname + '/../uploads/' + campaignId + '/' + imageId + '.jpg';
-          s3.uploadImageByPath(filename, imageId)
+          jo.rotate(filename, { quality: 100 })
+            .then(({ buffer, orientation, dimensions, quality }) => {
+              console.log(`Orientation was ${orientation}`);
+              console.log(`Dimensions after rotation: ${dimensions.width}x${dimensions.height}`);
+
+              return new Promise((res, rej) => {
+                const ws = fs.createWriteStream(filename);
+                ws.write(buffer);
+                ws.end(() => {
+                  console.log('Finished rotating image');
+                });
+                ws.on('finish', () => {
+                  res(true);
+                });
+                ws.on('error', rej);
+              });
+            })
+            .catch(err => {
+              if (err.code === jo.errors.correct_orientation) {
+                console.log('The orientation of the image ' + imageId + ' is already correct!');
+              } else if (err.code === jo.errors.no_orientation) {
+                console.log('There is no orientation on the image ' + imageId + '!');
+              } else if (err.code === jo.errors.unknown_orientation) {
+                console.log('The orientation on the image ' + imageId + ' is not known!');
+              } else {
+                console.error('Error while rotating image: ', err);
+              }
+
+              return s3.uploadImageByPath(filename, imageId);
+            })
+            .then(res => {
+              return s3.uploadImageByPath(filename, imageId);
+            })
             .then(url => {
               image.url = url;
               image.id = imageId;

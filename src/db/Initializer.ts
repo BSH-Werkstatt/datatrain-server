@@ -1,14 +1,10 @@
 import { Campaign } from '../models/campaign';
 import { DatabaseConnector } from './DatabaseConnector';
-import { ObjectID, ObjectId } from 'mongodb';
 import { ImageConnector } from './ImageConnector';
 import { ImageData } from '../models/data';
-import { UserConnector } from './UserConnector';
-import { User } from '../models/user';
-import { DBConfig } from './dbconfig';
 
-import path from 'path';
 import fs from 'fs';
+import jo from 'jpeg-autorotate';
 
 import { S3ImageService } from '../services/S3ImageService';
 
@@ -167,7 +163,41 @@ export class Initializer {
           let i = 0;
           // now upload these using the ids (insertedIds) as names to the S3 bucket
           files.forEach((file: string, index: number) => {
-            s3.uploadImageByPath(datasetFolder + file, result.insertedIds[index])
+            const filename = datasetFolder + file;
+
+            jo.rotate(filename, { quality: 100 })
+              .then(({ buffer, orientation, dimensions, quality }) => {
+                console.log(`Orientation was ${orientation}`);
+                console.log(`Dimensions after rotation: ${dimensions.width}x${dimensions.height}`);
+
+                return new Promise((res, rej) => {
+                  const ws = fs.createWriteStream(filename);
+                  ws.write(buffer);
+                  ws.end(() => {
+                    console.log('Finished rotating image');
+                  });
+                  ws.on('finish', () => {
+                    res(true);
+                  });
+                  ws.on('error', rej);
+                });
+              })
+              .catch(err => {
+                if (err.code === jo.errors.correct_orientation) {
+                  console.log('The orientation of the image ' + filename + ' is already correct!');
+                } else if (err.code === jo.errors.no_orientation) {
+                  console.log('There is no orientation on the image ' + filename + '!');
+                } else if (err.code === jo.errors.unknown_orientation) {
+                  console.log('The orientation on the image ' + filename + ' is not known!');
+                } else {
+                  console.error('Error while rotating image: ', err);
+                }
+
+                return true;
+              })
+              .then(res => {
+                return s3.uploadImageByPath(filename, result.insertedIds[index]);
+              })
               .then(url => {
                 i++;
 
