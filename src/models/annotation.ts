@@ -9,7 +9,7 @@ export class Annotation {
   userId: string;
   campaignId: string;
   imageId: string;
-  timestamp: string;
+  timestamp?: string;
 
   constructor(
     id: string,
@@ -19,7 +19,7 @@ export class Annotation {
     userId: string,
     campaignId: string,
     imageId: string,
-    timestamp: string
+    timestamp?: string
   ) {
     this.id = id;
     this.points = points;
@@ -28,7 +28,8 @@ export class Annotation {
     this.userId = userId;
     this.campaignId = campaignId;
     this.imageId = imageId;
-    this.timestamp = timestamp;
+
+    this.timestamp = timestamp ? timestamp : dateFormat(new Date(), 'isoDateTime');
   }
 
   static fromObject(object: any): Annotation {

@@ -8,14 +8,14 @@ abstract class Data {
   campaignId: string;
   userId: string;
   annotations: Annotation[];
-  timestamp: string;
+  timestamp?: string;
 
-  constructor(id: string, campaignId: string, userId: string, annotations: Annotation[], timestamp: string) {
+  constructor(id: string, campaignId: string, userId: string, annotations: Annotation[], timestamp?: string) {
     this.id = id;
     this.campaignId = campaignId;
     this.userId = userId;
     this.annotations = annotations;
-    this.timestamp = timestamp;
+    this.timestamp = timestamp ? timestamp : dateFormat(new Date(), 'isoDateTime');
   }
 }
 
