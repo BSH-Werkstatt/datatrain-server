@@ -9,6 +9,11 @@ export class UsersController extends Controller {
     return await new UserService().getUserByEmail(email);
   }
 
+  @Get('{userId}')
+  public async getUserById(userId: string): Promise<User> {
+    return await new UserService().getUserById(userId);
+  }
+
   @Post('')
   public async createUser(@Body() request: CreateUserRequest): Promise<User> {
     return await new UserService().createUser(request);

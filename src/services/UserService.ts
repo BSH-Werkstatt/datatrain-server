@@ -47,4 +47,24 @@ export class UserService {
       });
     });
   }
+
+  /**
+   * Gets the user by userId
+   * @param userId unique userId of the user
+   */
+  getUserById(userId: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      UserConnector.getInstance((db: UserConnector) => {
+        db.get(userId).then(result => {
+          db.connection.close();
+
+          if (!result) {
+            resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    });
+  }
 }

@@ -52,6 +52,21 @@ export enum CampaignType {
   ImageAnnotationCampaign = 0
 }
 
-/*
-  Dummy data we are using for testing
-*/
+export interface CampaignCreationRequest {
+  userToken: string;
+  /**
+   * @isInt type
+   */
+  type: CampaignType;
+  name: string;
+  urlName?: string;
+  description: string;
+  taxonomy: string[];
+  image: string;
+  ownerId?: string;
+}
+
+export interface CampaignUpdateRequest {
+  userToken: string;
+  campaign: Campaign;
+}

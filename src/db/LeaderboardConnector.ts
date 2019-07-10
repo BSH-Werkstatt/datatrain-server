@@ -10,13 +10,11 @@ export class LeaderboardConnector extends DatabaseConnector {
    * gets an instance of DatabaseConnector initialized with the correct credentials
    */
   static getInstance(callback: any) {
-    // TODO: store in environmental variables
     try {
       const db = new LeaderboardConnector(DBConfig.host, DBConfig.database, DBConfig.user, DBConfig.password);
       db.connect()
         .then(res => {
           callback(db);
-          // db.connection.close();
         })
         .catch(err => {
           console.error('An error occured while connecting to the database: ', err);

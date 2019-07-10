@@ -1,22 +1,41 @@
 import { DatabaseConnector } from './DatabaseConnector';
 import { ObjectId } from 'mongodb';
-import { User } from '../models/user';
+import { User, USER_TYPES } from '../models/user';
 import { DBConfig } from './dbconfig';
 
 export class UserConnector extends DatabaseConnector {
   collection = 'users';
 
+  static userHasCapabilityForCampaigns(userId: string): Promise<boolean> {
+    return new Promise<boolean>((res, rej) => {
+      UserConnector.getInstance((userConn: UserConnector) => {
+        userConn
+          .get(userId)
+          .then((user: User) => {
+            if (user.userType === USER_TYPES.ADMIN || user.userType === USER_TYPES.CAMPAIGN_OWNER) {
+              res(true);
+            }
+            {
+              res(false);
+            }
+          })
+          .catch(e => {
+            console.error('Error fetching user capabilities: ', e);
+            throw e;
+          });
+      });
+    });
+  }
+
   /**
    * gets an instance of DatabaseConnector initialized with the correct credentials
    */
   static getInstance(callback: any) {
-    // TODO: store in environmental variables
     try {
       const db = new UserConnector(DBConfig.host, DBConfig.database, DBConfig.user, DBConfig.password);
       db.connect()
         .then(res => {
           callback(db);
-          // db.connection.close();
         })
         .catch(err => {
           console.error('An error occured while connecting to the database: ', err);
@@ -47,13 +66,34 @@ export class UserConnector extends DatabaseConnector {
   }
 
   /**
+   * Returns the user with the given _id
+   * @param userId _id of the user
+   */
+  get(userId: string): Promise<User> {
+    return new Promise((resolve, reject) => {
+      this.findOne(this.collection, { _id: ObjectId.createFromHexString(userId) })
+        .then(result => {
+          if (result) {
+            resolve(User.fromObject(result));
+          } else {
+            resolve(null);
+          }
+        })
+        .catch(err => {
+          console.error('Error while getting user with _id ' + userId, err);
+        });
+    });
+  }
+
+  /**
    * inserts or updates documents depending if id exists
-   * @param leaderboard Leaderboard object
+   * @param user Leaderboard object
    */
   save(user: User): Promise<any> {
     const self = {
       email: user.email,
-      name: user.name
+      name: user.name,
+      userType: user.userType ? user.userType : USER_TYPES.ANNOTATOR
     };
 
     if (user.id) {

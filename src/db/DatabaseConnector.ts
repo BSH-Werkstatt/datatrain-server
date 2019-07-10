@@ -29,7 +29,6 @@ export class DatabaseConnector {
       db.connect()
         .then(res => {
           callback(db);
-          // db.connection.close();
         })
         .catch(err => {
           console.error('An error occured while connecting to the database: ', err);

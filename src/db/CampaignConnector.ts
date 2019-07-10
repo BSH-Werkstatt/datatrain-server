@@ -1,6 +1,6 @@
 import { Campaign } from '../models/campaign';
 import { DatabaseConnector } from './DatabaseConnector';
-import { ObjectID } from 'mongodb';
+import { ObjectID, ObjectId } from 'mongodb';
 import { DBConfig } from './dbconfig';
 
 export class CampaignConnector extends DatabaseConnector {
@@ -10,7 +10,6 @@ export class CampaignConnector extends DatabaseConnector {
    * gets an instance of DatabaseConnector initialized with the correct credentials
    */
   static getInstance(callback: any) {
-    // TODO: store in environmental variables
     try {
       const db = new CampaignConnector(DBConfig.host, DBConfig.database, DBConfig.user, DBConfig.password);
       db.connect()
@@ -83,5 +82,28 @@ export class CampaignConnector extends DatabaseConnector {
           console.error('Error while getting campaigns', err);
         });
     });
+  }
+
+  /**
+   * inserts or updates documents depending if id exists
+   * @param campaign campaign object
+   */
+  save(campaign: Campaign): Promise<any> {
+    const self = {
+      id: campaign.id,
+      ownerId: campaign.ownerId,
+      type: campaign.type,
+      name: campaign.name,
+      urlName: campaign.urlName,
+      description: campaign.description,
+      taxonomy: campaign.taxonomy,
+      image: campaign.image
+    };
+
+    if (campaign.id) {
+      return this.updateDocument(this.collection, { _id: ObjectId.createFromHexString(campaign.id) }, self);
+    } else {
+      return this.insertOne(this.collection, self);
+    }
   }
 }

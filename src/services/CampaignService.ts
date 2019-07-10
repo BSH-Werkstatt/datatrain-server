@@ -1,4 +1,4 @@
-import { Campaign } from '../models/campaign';
+import { Campaign, CampaignCreationRequest, CampaignUpdateRequest } from '../models/campaign';
 import { ImageData } from '../models/data';
 import { Annotation, AnnotationCreationRequest } from '../models/annotation';
 import os from 'os';
@@ -19,6 +19,8 @@ import { S3ImageService } from './S3ImageService';
 
 import dateFormat from 'dateformat';
 import jo from 'jpeg-autorotate';
+import { UserConnector } from '../db/UserConnector';
+import { User, USER_TYPES } from '../models/user';
 
 export class CampaignService {
   /**
@@ -41,6 +43,93 @@ export class CampaignService {
     });
 
     return promise;
+  }
+
+  /**
+   * generates a new url name for a campaign, which is unique
+   * @param name name of the campaign
+   */
+  campaignBuildNewURLName(name: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const urlName = name.toLocaleLowerCase().replace(' ', '-');
+
+      CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
+        campaignConn.getByURLName(urlName).then(res => {
+          if (!res) {
+            resolve(urlName);
+          } else {
+            resolve(urlName + Math.floor(Math.random() * 100000));
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * creates a campaign according to a CampaignCreationRequest
+   * @param request a CampaignCreationRequest object
+   */
+  post(request: CampaignCreationRequest): Promise<Campaign> {
+    return new Promise<Campaign>((resolve, reject) => {
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
+              request.ownerId = userId;
+
+              this.campaignBuildNewURLName(request.name).then(urlName => {
+                request.urlName = urlName;
+                const campaign = Campaign.fromObject(request);
+
+                campaignConn.save(campaign);
+              });
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
+  }
+
+  /**
+   * updates a campaign according to a CampaignCreationRequest
+   * @param request a CampaignCreationRequest object
+   */
+  put(campaignId: string, request: CampaignUpdateRequest): Promise<Campaign> {
+    console.log('Got PUT request to update campaign ' + campaignId);
+
+    return new Promise<Campaign>((resolve, reject) => {
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
+              request.campaign.id = campaignId;
+              const campaign = campaignConn.save(request.campaign);
+
+              console.log('Campaign ' + campaignId + ' updated.');
+              resolve(campaign);
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
   }
 
   /**

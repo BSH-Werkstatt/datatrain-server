@@ -1,12 +1,11 @@
-import { Get, Route, Post, Controller, Request, Body } from 'tsoa';
+import { Get, Route, Post, Controller, Request, Body, Put } from 'tsoa';
 import express from 'express';
 
 import { ImageData } from '../models/data';
-import { Campaign } from '../models/campaign';
+import { Campaign, CampaignCreationRequest, CampaignUpdateRequest } from '../models/campaign';
 import { CampaignService } from '../services/CampaignService';
 import { AnnotationCreationRequest, Annotation } from '../models/annotation';
 import { Leaderboard } from '../models/leaderboard';
-import { CampaignConnector } from '../db/CampaignConnector';
 import { PredictionResult } from '../models/prediction';
 import { Initializer } from '../db/Initializer';
 
@@ -29,6 +28,16 @@ export class CampaignsController extends Controller {
   @Get('{campaignId}')
   public async getCampaign(campaignId: string): Promise<Campaign> {
     return await new CampaignService().get(campaignId);
+  }
+
+  @Post('')
+  public async postCampaign(@Body() request: CampaignCreationRequest): Promise<Campaign> {
+    return await new CampaignService().post(request);
+  }
+
+  @Put('{campaignId}')
+  public async putCampaign(campaignId: string, @Body() request: CampaignUpdateRequest): Promise<Campaign> {
+    return await new CampaignService().put(campaignId, request);
   }
 
   @Get('byURLName/{campaignName}')
