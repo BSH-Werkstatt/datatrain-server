@@ -73,7 +73,8 @@ export class ImageConnector extends DatabaseConnector {
       campaignId: image.campaignId,
       userId: image.userId,
       annotations: image.annotations,
-      url: image.url
+      url: image.url,
+      timestamp: image.timestamp
     };
 
     if (image.id) {

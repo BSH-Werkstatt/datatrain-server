@@ -17,6 +17,8 @@ import fs from 'fs';
 import { PredictionResult } from '../models/prediction';
 import { S3ImageService } from './S3ImageService';
 
+import dateFormat from 'dateformat';
+
 export class CampaignService {
   /**
    * Returns the Campaign with the given identifier, if it does not exist, an error will be raised
@@ -95,7 +97,7 @@ export class CampaignService {
       const userToken = request.query.userToken;
       const userId = UserService.getUserIdFromToken(userToken);
 
-      const image = new ImageData('', campaignId, userId, [], '');
+      const image = new ImageData('', campaignId, userId, [], '', dateFormat(new Date(), 'isoDateTime'));
       image.save((imageData: ImageData) => {
         const imageId = imageData.id;
 
@@ -207,7 +209,8 @@ export class CampaignService {
           item.label,
           userId,
           campaignId,
-          imageId
+          imageId,
+          dateFormat(new Date(), 'isoDateTime')
         );
 
         annotations.push(annotation);

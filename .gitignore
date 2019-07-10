@@ -1,4 +1,4 @@
-dataset
+datasets
 src/db/db-init.ts
 
 # Created by https://www.gitignore.io/api/node,linux,macos,python,windows
