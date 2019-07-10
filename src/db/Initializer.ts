@@ -10,7 +10,6 @@ import { DBConfig } from './dbconfig';
 import path from 'path';
 import fs from 'fs';
 
-import { DBInit } from './db-init';
 import { S3ImageService } from '../services/S3ImageService';
 
 export class Initializer {
@@ -22,6 +21,19 @@ export class Initializer {
     console.log(
       '--------------------------------------\n--- INITIALIZATION PROCESS STARTED ---\n--------------------------------------\n'
     );
+
+    let DBInit: { users: any[]; campaigns: any[] } = {
+      users: [],
+      campaigns: []
+    };
+
+    try {
+      DBInit = require('./db-init').default;
+      // do stuff
+    } catch (ex) {
+      console.error('No db-init present!');
+      return;
+    }
 
     let insertedUserIds: string[];
     const campaignsUsers: any[][] = [];

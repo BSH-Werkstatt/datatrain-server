@@ -1,3 +1,8 @@
+/**
+ * to initialize the DB a file called db-init.js has to be present in the db/ folder of the compiled code
+ *
+ */
+
 const adminUsers = [
   { name: 'Admin', email: 'admin.admin@bshg.com' },
   { name: 'iPraktikum', email: 'ipraktikum.bsh@tum.de' }
@@ -17,7 +22,7 @@ const fridgeCampaignUsers = [
   { name: 'Mr.Lorem Ipsum', email: 'max.mustermann@bshg.de' }
 ];
 
-export const DBInit = {
+export default {
   users: adminUsers.concat(devUsers).concat(fridgeCampaignUsers),
   campaigns: [
     {
