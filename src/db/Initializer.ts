@@ -16,7 +16,7 @@ import { S3ImageService } from '../services/S3ImageService';
 export class Initializer {
   /**
    * Initializes the BSH campaigns
-   * @param ms delay in ms
+   * this means user, campaign and leaderboards + files (currently images, via initCampaignFiles())
    */
   static init() {
     console.log(
@@ -31,12 +31,14 @@ export class Initializer {
 
     DatabaseConnector.getInstance((conn: DatabaseConnector) => {
       console.log(`Preparing to insert ${DBInit.users.length} users...`);
+      // insert users
       conn
         .insertMany('users', DBInit.users)
         .then((result: any) => {
           console.log(`Inserted ${result.insertedCount} users...`);
           insertedUserIds = result.insertedIds;
 
+          // process campaigns
           const campaigns: object[] = [];
           DBInit.campaigns.forEach(campaign => {
             const campaignUsers = campaign.users;
@@ -62,6 +64,7 @@ export class Initializer {
           insertedCampaigns = result.ops;
           insertedCampaignIds = result.insertedIds;
 
+          // process leaderboards
           const leaderboards: object[] = [];
           for (let i = 0; i < result.insertedCount; i++) {
             const campaignId = result.insertedIds[i];
@@ -93,9 +96,10 @@ export class Initializer {
           console.log(`Inserted ${result.insertedCount} leaderboards...`);
           const adminId = insertedUserIds[0]; // assumed
 
+          // process campaign data
           insertedCampaigns.forEach((campaign, i) => {
             campaign.id = insertedCampaignIds[i];
-            this.initCampaign(campaign, adminId);
+            this.initCampaignFiles(campaign, adminId);
           });
         })
         .catch(e => {
@@ -104,7 +108,12 @@ export class Initializer {
     });
   }
 
-  static initCampaign(campaign: Campaign, userId: string) {
+  /**
+   * initializes the files of the given campaign using files present in the datasets/:campaignUrlName folder
+   * @param campaign campaign object
+   * @param userId id of the user to insert all the files as (usually and admin user)
+   */
+  static initCampaignFiles(campaign: Campaign, userId: string) {
     // we'll remove this later
     console.log('Initializing "' + campaign.name + ' Campaign"...');
 
@@ -136,6 +145,7 @@ export class Initializer {
         });
       });
 
+      // first insert ImageData objects to the DB
       connector
         .insertMany(connector.collection, images)
         .then((result: any) => {
@@ -143,6 +153,7 @@ export class Initializer {
           const s3 = new S3ImageService();
 
           let i = 0;
+          // now upload these using the ids (insertedIds) as names to the S3 bucket
           files.forEach((file: string, index: number) => {
             s3.uploadImageByPath(datasetFolder + file, result.insertedIds[index])
               .then(url => {
@@ -152,11 +163,12 @@ export class Initializer {
                   console.log('Uploaded ' + i + '/' + files.length + ' files to the bucket.');
                 }
 
+                // now save the url to the ImageData document
                 ImageConnector.getInstance((conn: ImageConnector) => {
                   conn.get(result.insertedIds[index].toString()).then(imageData => {
                     imageData.url = url;
                     imageData.save((iData: ImageData) => {
-                      console.log('Uploaded URL for ' + iData.id);
+                      console.log('Uploaded URL and saved for ' + iData.id);
                     });
                   });
                 });

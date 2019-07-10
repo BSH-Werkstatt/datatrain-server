@@ -1,6 +1,9 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+/**
+ * these should be present in a .env file (NOT IN GIT!)
+ */
 export const DBConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,

@@ -16,8 +16,15 @@ export class S3ImageService {
     this.s3 = new AWS.S3();
   }
 
-  uploadImageByPath(filePath: string, imageId: string): Promise<any> {
+  /**
+   * uploads a file to the S3 bucket given a path to the file (and as name to save it under)
+   * @param filePath path to the uploaded file
+   * @param name name to save the file on S3 (without extension)
+   */
+  uploadImageByPath(filePath: string, name: string): Promise<any> {
     return new Promise((resolve, reject) => {
+      // extension check now only performed for JPEG images
+      // TODO: should be extended to a more general check (for different campaign types)
       if (path.extname(filePath).toLowerCase() !== '.jpg' && path.extname(filePath).toLowerCase() !== '.jpeg') {
         console.log('Wrong file extension.', filePath);
       }
@@ -26,7 +33,7 @@ export class S3ImageService {
       const params = {
         Bucket: 'datatrain-static',
         Body: fs.createReadStream(filePath),
-        Key: 'images/' + imageId + '.jpg'
+        Key: 'images/' + name + '.jpg'
       };
 
       this.s3.upload(params, (err: any, data: any) => {
