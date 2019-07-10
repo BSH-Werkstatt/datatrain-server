@@ -5,11 +5,11 @@ import './controller/HealthcheckController';
 import bodyParser from 'body-parser';
 import express from 'express';
 import methodOverride from 'method-override';
-import './db/DatabaseConnector';
 import dotenv from 'dotenv';
 
 // @ts-ignore
 import { RegisterRoutes } from './routes';
+import { ImagesController } from './controller/ImagesController';
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -21,8 +21,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/images', express.static(__dirname + '/uploads'));
-app.use('/predictions', express.static(__dirname + '/predictions'));
+app.get('/images/:campaignId/:imageId.jpg', (req, res) => {
+  ImagesController.redirectToS3(req, res);
+});
+
+app.get('/images/:imageId.jpg', (req, res) => {
+  ImagesController.redirectToS3(req, res);
+});
 
 app.use('/docs', express.static(__dirname + '/swagger-ui'));
 app.use('/swagger.json', (req, res) => {
