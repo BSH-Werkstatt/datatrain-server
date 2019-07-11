@@ -103,7 +103,7 @@ export class Initializer {
         .then((result: any) => {
           console.log(`Inserted ${result.insertedCount} leaderboards...`);
           const adminId = insertedUserIds[0]; // assumed
-          conn.connection.close();
+          // conn.connection.close();
 
           // process campaign data
           insertedCampaigns.forEach((campaign, i) => {
@@ -148,8 +148,8 @@ export class Initializer {
       files.forEach((file: string) => {
         images.push({
           url: '',
-          campaignId,
-          userId,
+          campaignId: campaignId.toString(),
+          userId: userId.toString(),
           annotations: []
         });
       });
@@ -158,7 +158,6 @@ export class Initializer {
       connector
         .insertMany(connector.collection, images)
         .then((result: any) => {
-          connector.connection.close();
           const s3 = new S3ImageService();
 
           let i = 0;
@@ -166,13 +165,14 @@ export class Initializer {
           files.forEach((file: string, index: number) => {
             const filename = datasetFolder + file;
 
-            jo.rotate(filename, { quality: 100 })
+            jo.rotate(filename, { quality: 80 })
               .then(({ buffer, orientation, dimensions, quality }) => {
                 console.log(`Orientation was ${orientation}`);
                 console.log(`Dimensions after rotation: ${dimensions.width}x${dimensions.height}`);
 
                 return new Promise((res, rej) => {
                   const ws = fs.createWriteStream(filename);
+                  console.log('Writing to buffer of ', filename);
                   ws.write(buffer);
                   ws.end(() => {
                     console.log('Finished rotating image');
@@ -197,6 +197,7 @@ export class Initializer {
                 return true;
               })
               .then(res => {
+                console.log('Preparing to upload...');
                 return s3.uploadImageByPath(filename, result.insertedIds[index]);
               })
               .then(url => {
@@ -207,12 +208,10 @@ export class Initializer {
                 }
 
                 // now save the url to the ImageData document
-                ImageConnector.getInstance((conn: ImageConnector) => {
-                  conn.get(result.insertedIds[index].toString()).then(imageData => {
-                    imageData.url = url;
-                    imageData.save((iData: ImageData) => {
-                      console.log('Uploaded URL and saved for ' + iData.id);
-                    });
+                connector.get(result.insertedIds[index].toString()).then(imageData => {
+                  imageData.url = url;
+                  imageData.save((iData: ImageData) => {
+                    console.log('Uploaded URL and saved for ' + iData.id);
                   });
                 });
               })
