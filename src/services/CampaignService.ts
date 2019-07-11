@@ -71,6 +71,8 @@ export class CampaignService {
    * @param request a CampaignCreationRequest object
    */
   post(request: CampaignCreationRequest): Promise<Campaign> {
+    console.log('Got POST request to create a campaign');
+
     return new Promise<Campaign>((resolve, reject) => {
       const userId = UserService.getUserIdFromToken(request.userToken);
       const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
@@ -85,7 +87,11 @@ export class CampaignService {
                 request.urlName = urlName;
                 const campaign = Campaign.fromObject(request);
 
-                campaignConn.save(campaign);
+                campaignConn.save(campaign).then(campaignResult => {
+                  campaign.id = campaignResult.insertedId.toString();
+                  resolve(campaign);
+                  console.log('Campaign ' + campaign.id + ' created.');
+                });
               });
             });
           } else {
@@ -401,7 +407,7 @@ export class CampaignService {
    */
   postLeaderboard(campaignId: string, request: LeaderboardCreationRequest): Promise<Leaderboard> {
     return new Promise<Leaderboard>((resolve, reject) => {
-      console.log('Got PUT request to update loaderboard of the campaign ' + campaignId);
+      console.log('Got POST request to create the loaderboard of the campaign ' + campaignId);
 
       const userId = UserService.getUserIdFromToken(request.userToken);
       const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
@@ -412,10 +418,13 @@ export class CampaignService {
             LeaderboardConnector.getInstance((leaderboardConn: LeaderboardConnector) => {
               request.campaignId = campaignId;
 
-              const leaderboard = leaderboardConn.save(Leaderboard.fromObject(request));
+              leaderboardConn.save(Leaderboard.fromObject(request)).then(leaderboardResult => {
+                console.log('Leaderboard of campaign ' + campaignId + ' created.');
 
-              console.log('Leaderboard of campaign ' + campaignId + ' created.');
-              resolve(leaderboard);
+                const leaderboard = leaderboardResult.ops[0];
+                leaderboard.id = leaderboardResult.insertedId.toString();
+                resolve(leaderboard);
+              });
             });
           } else {
             reject('hasCapability = false');
