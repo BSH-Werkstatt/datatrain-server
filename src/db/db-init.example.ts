@@ -28,7 +28,7 @@ export default {
     {
       ownerEmail: 'admin.admin@bshg.com',
       type: 0,
-      name: 'Fridge',
+      name: 'Camera in the Fridge',
       description:
         "In this campaign, we're asking you to label as many images of fridge contents as you can!\n\n\
         We have prepared some images for you, but feel free to take pictures of any fridge you find and annotate it!",
@@ -45,35 +45,35 @@ export default {
         'Banana'
       ],
       image: 'https://media.mnn.com/assets/images/2018/11/inside_refrigerator.jpg.653x0_q80_crop-smart.jpg',
-      urlName: 'fridge',
+      urlName: 'camera-in-the-fridge',
       users: devUsers.concat(fridgeCampaignUsers)
     },
     {
       ownerEmail: 'admin.admin@bshg.com',
       type: 0,
-      name: 'Washing Machines and Control Panels',
+      name: 'MARK',
       description: 'In this campaign we are trying to differentiate between washing machines and their control panels.',
       taxonomy: ['Washing Machine', 'Control Panel'],
       image:
         'https://media3.bosch-home.com/Images/600x/MCIM02959487_Bosch_Product_Selector_WM_1240_1240_mobile_VP1.jpg',
-      urlName: 'washing-machines-and-control-panels',
+      urlName: 'mark',
       users: devUsers.concat(fridgeCampaignUsers)
     },
     {
       ownerEmail: 'admin.admin@bshg.com',
       type: 0,
-      name: 'Washing Machines and Dryers',
+      name: 'MARK: Avantgarde',
       description: 'We are collecting data to tell washing machines and dryers apart.',
-      taxonomy: ['Washing Machine', 'Dryer'],
+      taxonomy: ['Washing Machine', 'Tumble Dryer'],
       image:
         'https://www.appliancesonline.com.au/public/images/product/wtw87565au/external/9kg-Bosch-Heat-Pump-Dryer-WTW87565AU-high.jpeg',
-      urlName: 'washing-machines-and-dryers',
+      urlName: 'mark-avantgarde',
       users: devUsers.concat(fridgeCampaignUsers)
     },
     {
       ownerEmail: 'admin.admin@bshg.com',
       type: 0,
-      name: 'Tableware',
+      name: 'MyLoadingWay',
       description: 'Help us recognize what kind of tableware is in the picture.',
       taxonomy: [
         'Wine Glass',
@@ -89,15 +89,15 @@ export default {
         'Chopsticks'
       ],
       image: 'https://media3.bosch-home.com/Images/600x/MCIM02055360_Bosch-service-Dishwasher-Support_1600x.jpg',
-      urlName: 'tableware',
+      urlName: 'myloadingway',
       users: devUsers.concat(fridgeCampaignUsers)
     },
     {
-      ownerEmail: 'iPraktikum@tum.de',
+      ownerEmail: 'ipraktikum.bsh@tum.de',
       type: 0,
       name: 'Dummy Developers',
       description: 'This is the dummy campaign for developers - testing.',
-      taxonomy: ['Foo', 'Bar', 'Moep', 'Hotdog', 'Not Hotdog', 'Penguin'],
+      taxonomy: ['Foo', 'Bar', 'Exzellenz', 'Hotdog', 'Not Hotdog', 'Penguin', 'Brügge'],
       image: 'https://www.safetyandhealthmagazine.com/ext/resources/images/safety-tips/yellow-hardhat.jpg',
       urlName: 'dummy-developers',
       users: devUsers.concat(adminUsers)

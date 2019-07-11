@@ -29,7 +29,6 @@ export class DatabaseConnector {
       db.connect()
         .then(res => {
           callback(db);
-          // db.connection.close();
         })
         .catch(err => {
           console.error('An error occured while connecting to the database: ', err);
@@ -155,6 +154,26 @@ export class DatabaseConnector {
         }
 
         resolve(docs);
+      });
+    });
+  }
+
+  /**
+   * Queries the collection according the given parameters, deletes only one result taht matches
+   * @param collection database collection
+   * @param params query parameters
+   */
+  deleteOne(collection: string, params: object): Promise<object> {
+    return new Promise<object>((resolve, reject) => {
+      const col = this.db.collection(collection);
+
+      col.deleteOne(params, (err: any, c: any) => {
+        if (err) {
+          reject(err);
+        }
+
+        console.log(c.result.n + ' Record(s) deleted successfully');
+        resolve(c);
       });
     });
   }

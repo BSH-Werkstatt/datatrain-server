@@ -1,4 +1,4 @@
-import { Campaign } from '../models/campaign';
+import { Campaign, CampaignCreationRequest, CampaignUpdateRequest } from '../models/campaign';
 import { ImageData } from '../models/data';
 import { Annotation, AnnotationCreationRequest } from '../models/annotation';
 import os from 'os';
@@ -9,7 +9,7 @@ import path from 'path';
 import { UserService } from './UserService';
 import { CampaignConnector } from '../db/CampaignConnector';
 import { ImageConnector } from '../db/ImageConnector';
-import { Leaderboard } from '../models/leaderboard';
+import { Leaderboard, LeaderboardCreationRequest, LeaderboardUpdateRequest } from '../models/leaderboard';
 import { LeaderboardConnector } from '../db/LeaderboardConnector';
 
 import http from 'http';
@@ -19,6 +19,9 @@ import { S3ImageService } from './S3ImageService';
 
 import dateFormat from 'dateformat';
 import jo from 'jpeg-autorotate';
+import { UserConnector } from '../db/UserConnector';
+import { User, USER_TYPES } from '../models/user';
+import { ObjectId } from 'bson';
 
 export class CampaignService {
   /**
@@ -41,6 +44,99 @@ export class CampaignService {
     });
 
     return promise;
+  }
+
+  /**
+   * generates a new url name for a campaign, which is unique
+   * @param name name of the campaign
+   */
+  campaignBuildNewURLName(name: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const urlName = name.toLocaleLowerCase().replace(' ', '-');
+
+      CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
+        campaignConn.getByURLName(urlName).then(res => {
+          if (!res) {
+            resolve(urlName);
+          } else {
+            resolve(urlName + Math.floor(Math.random() * 100000));
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * creates a campaign according to a CampaignCreationRequest
+   * @param request a CampaignCreationRequest object
+   */
+  post(request: CampaignCreationRequest): Promise<Campaign> {
+    console.log('Got POST request to create a campaign');
+
+    return new Promise<Campaign>((resolve, reject) => {
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
+              request.ownerId = userId;
+
+              this.campaignBuildNewURLName(request.name).then(urlName => {
+                request.urlName = urlName;
+                const campaign = Campaign.fromObject(request);
+
+                campaignConn.save(campaign).then(campaignResult => {
+                  campaign.id = campaignResult.insertedId.toString();
+                  resolve(campaign);
+                  console.log('Campaign ' + campaign.id + ' created.');
+                });
+              });
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
+  }
+
+  /**
+   * updates a campaign according to a CampaignCreationRequest
+   * @param request a CampaignCreationRequest object
+   */
+  put(campaignId: string, request: CampaignUpdateRequest): Promise<Campaign> {
+    console.log('Got PUT request to update campaign ' + campaignId);
+
+    return new Promise<Campaign>((resolve, reject) => {
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
+              request.campaign.id = campaignId;
+              const campaign = campaignConn.save(request.campaign);
+
+              console.log('Campaign ' + campaignId + ' updated.');
+              resolve(campaign);
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
   }
 
   /**
@@ -92,7 +188,7 @@ export class CampaignService {
    * @param campaignId Identifier of the campaign to which the image is uploaded to
    * @param request Express request with the uploaded image file (request.file)
    */
-  uploadImage(campaignId: string, request: express.Request): Promise<ImageData> {
+  uploadImage(campaignId: string, request: express.Request, doNotAddScore?: boolean): Promise<ImageData> {
     return new Promise((resolve, reject) => {
       // @ts-ignore
       const userToken = request.query.userToken;
@@ -128,7 +224,9 @@ export class CampaignService {
             reject(error);
           }
 
-          this.addLeaderboardScoreToUser(campaignId, userId, 1);
+          if (!doNotAddScore && campaignId) {
+            this.addLeaderboardScoreToUser(campaignId, userId, 1);
+          }
           const s3 = new S3ImageService();
 
           const filename = __dirname + '/../uploads/' + campaignId + '/' + imageId + '.jpg';
@@ -157,10 +255,10 @@ export class CampaignService {
               } else if (err.code === jo.errors.unknown_orientation) {
                 console.log('The orientation on the image ' + imageId + ' is not known!');
               } else {
-                console.error('Error while rotating image: ', err);
+                console.log('Error while rotating image: ', err);
               }
 
-              return s3.uploadImageByPath(filename, imageId);
+              return null;
             })
             .then(res => {
               return s3.uploadImageByPath(filename, imageId);
@@ -303,6 +401,78 @@ export class CampaignService {
     });
   }
   /**
+   * creates the leaderboard for a campaign according to a LeaderboardCreationRequest
+   * @param campaignId id of the updated campaign
+   * @param request a LeaderboardCreationRequest object
+   */
+  postLeaderboard(campaignId: string, request: LeaderboardCreationRequest): Promise<Leaderboard> {
+    return new Promise<Leaderboard>((resolve, reject) => {
+      console.log('Got POST request to create the loaderboard of the campaign ' + campaignId);
+
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            LeaderboardConnector.getInstance((leaderboardConn: LeaderboardConnector) => {
+              request.campaignId = campaignId;
+
+              leaderboardConn.save(Leaderboard.fromObject(request)).then(leaderboardResult => {
+                console.log('Leaderboard of campaign ' + campaignId + ' created.');
+
+                const leaderboard = leaderboardResult.ops[0];
+                leaderboard.id = leaderboardResult.insertedId.toString();
+                resolve(leaderboard);
+              });
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
+  }
+
+  /**
+   * updates the leaderboard for a campaign according to a LeaderboardUpdateRequest
+   * @param campaignId id of the updated campaign
+   * @param request a LeaderboardUpdateRequest object
+   */
+  putLeaderboard(campaignId: string, request: LeaderboardUpdateRequest): Promise<Leaderboard> {
+    return new Promise<Leaderboard>((resolve, reject) => {
+      console.log('Got PUT request to update loaderboard of the campaign ' + campaignId);
+
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            LeaderboardConnector.getInstance((leaderboardConn: LeaderboardConnector) => {
+              request.leaderboard.campaignId = campaignId;
+              const leaderboard = leaderboardConn.save(request.leaderboard);
+
+              console.log('Leaderboard of campaign ' + campaignId + ' updated.');
+              resolve(leaderboard);
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
+  }
+
+  /**
    * Adds score to the leaderboard entry of the user with userId in the campaign with campaignId
    * @param campaignId campaign identifier
    * @param userId user identifier
@@ -416,6 +586,38 @@ export class CampaignService {
       } catch (e) {
         console.error('Error in POST request to ML server: ', e);
       }
+    });
+  }
+
+  /**
+   * Uploads the campaign image as an ImageData for campaignId = ""
+   * @param campaignId id of the campaign
+   * @param request request with the image
+   */
+  uploadCampaignImage(campaignId: string, request: express.Request): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this.uploadImage(campaignId, request, false).then((imageData: ImageData) => {
+        const url = imageData.url;
+
+        ImageConnector.getInstance((conn: ImageConnector) => {
+          conn.deleteOne(conn.collection, { imageId: ObjectId.createFromHexString(imageData.id) }).then(() => {
+            conn.connection.close();
+            resolve(url);
+          });
+        });
+      });
+    });
+  }
+
+  /**
+   * Gets the url of the campaign image
+   * @param campaignId id of the campaign
+   */
+  getCampaignImage(campaignId: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this.get(campaignId).then((campaign: Campaign) => {
+        resolve(campaign.image);
+      });
     });
   }
 }
