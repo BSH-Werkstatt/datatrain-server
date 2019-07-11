@@ -61,3 +61,14 @@ export class Leaderboard {
     });
   }
 }
+
+export class LeaderboardCreationRequest {
+  campaignId: string;
+  userToken: string;
+  scores: LeaderboardScore[];
+}
+
+export class LeaderboardUpdateRequest {
+  userToken: string;
+  leaderboard: Leaderboard;
+}

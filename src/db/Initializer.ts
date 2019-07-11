@@ -103,6 +103,7 @@ export class Initializer {
         .then((result: any) => {
           console.log(`Inserted ${result.insertedCount} leaderboards...`);
           const adminId = insertedUserIds[0]; // assumed
+          conn.connection.close();
 
           // process campaign data
           insertedCampaigns.forEach((campaign, i) => {

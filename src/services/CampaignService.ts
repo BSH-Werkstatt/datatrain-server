@@ -9,7 +9,7 @@ import path from 'path';
 import { UserService } from './UserService';
 import { CampaignConnector } from '../db/CampaignConnector';
 import { ImageConnector } from '../db/ImageConnector';
-import { Leaderboard } from '../models/leaderboard';
+import { Leaderboard, LeaderboardCreationRequest, LeaderboardUpdateRequest } from '../models/leaderboard';
 import { LeaderboardConnector } from '../db/LeaderboardConnector';
 
 import http from 'http';
@@ -21,6 +21,7 @@ import dateFormat from 'dateformat';
 import jo from 'jpeg-autorotate';
 import { UserConnector } from '../db/UserConnector';
 import { User, USER_TYPES } from '../models/user';
+import { ObjectId } from 'bson';
 
 export class CampaignService {
   /**
@@ -181,7 +182,7 @@ export class CampaignService {
    * @param campaignId Identifier of the campaign to which the image is uploaded to
    * @param request Express request with the uploaded image file (request.file)
    */
-  uploadImage(campaignId: string, request: express.Request): Promise<ImageData> {
+  uploadImage(campaignId: string, request: express.Request, doNotAddScore?: boolean): Promise<ImageData> {
     return new Promise((resolve, reject) => {
       // @ts-ignore
       const userToken = request.query.userToken;
@@ -217,7 +218,9 @@ export class CampaignService {
             reject(error);
           }
 
-          this.addLeaderboardScoreToUser(campaignId, userId, 1);
+          if (!doNotAddScore && campaignId) {
+            this.addLeaderboardScoreToUser(campaignId, userId, 1);
+          }
           const s3 = new S3ImageService();
 
           const filename = __dirname + '/../uploads/' + campaignId + '/' + imageId + '.jpg';
@@ -246,10 +249,10 @@ export class CampaignService {
               } else if (err.code === jo.errors.unknown_orientation) {
                 console.log('The orientation on the image ' + imageId + ' is not known!');
               } else {
-                console.error('Error while rotating image: ', err);
+                console.log('Error while rotating image: ', err);
               }
 
-              return s3.uploadImageByPath(filename, imageId);
+              return null;
             })
             .then(res => {
               return s3.uploadImageByPath(filename, imageId);
@@ -392,6 +395,75 @@ export class CampaignService {
     });
   }
   /**
+   * creates the leaderboard for a campaign according to a LeaderboardCreationRequest
+   * @param campaignId id of the updated campaign
+   * @param request a LeaderboardCreationRequest object
+   */
+  postLeaderboard(campaignId: string, request: LeaderboardCreationRequest): Promise<Leaderboard> {
+    return new Promise<Leaderboard>((resolve, reject) => {
+      console.log('Got PUT request to update loaderboard of the campaign ' + campaignId);
+
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            LeaderboardConnector.getInstance((leaderboardConn: LeaderboardConnector) => {
+              request.campaignId = campaignId;
+
+              const leaderboard = leaderboardConn.save(Leaderboard.fromObject(request));
+
+              console.log('Leaderboard of campaign ' + campaignId + ' created.');
+              resolve(leaderboard);
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
+  }
+
+  /**
+   * updates the leaderboard for a campaign according to a LeaderboardUpdateRequest
+   * @param campaignId id of the updated campaign
+   * @param request a LeaderboardUpdateRequest object
+   */
+  putLeaderboard(campaignId: string, request: LeaderboardUpdateRequest): Promise<Leaderboard> {
+    return new Promise<Leaderboard>((resolve, reject) => {
+      console.log('Got PUT request to update loaderboard of the campaign ' + campaignId);
+
+      const userId = UserService.getUserIdFromToken(request.userToken);
+      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+
+      hasCapabilityPromise
+        .then((hasCapability: boolean) => {
+          if (hasCapability) {
+            LeaderboardConnector.getInstance((leaderboardConn: LeaderboardConnector) => {
+              request.leaderboard.campaignId = campaignId;
+              const leaderboard = leaderboardConn.save(request.leaderboard);
+
+              console.log('Leaderboard of campaign ' + campaignId + ' updated.');
+              resolve(leaderboard);
+            });
+          } else {
+            reject('hasCapability = false');
+          }
+        })
+        .catch(e => {
+          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+          console.error(reason);
+          reject(reason);
+        });
+    });
+  }
+
+  /**
    * Adds score to the leaderboard entry of the user with userId in the campaign with campaignId
    * @param campaignId campaign identifier
    * @param userId user identifier
@@ -505,6 +577,38 @@ export class CampaignService {
       } catch (e) {
         console.error('Error in POST request to ML server: ', e);
       }
+    });
+  }
+
+  /**
+   * Uploads the campaign image as an ImageData for campaignId = ""
+   * @param campaignId id of the campaign
+   * @param request request with the image
+   */
+  uploadCampaignImage(campaignId: string, request: express.Request): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this.uploadImage(campaignId, request, false).then((imageData: ImageData) => {
+        const url = imageData.url;
+
+        ImageConnector.getInstance((conn: ImageConnector) => {
+          conn.deleteOne(conn.collection, { imageId: ObjectId.createFromHexString(imageData.id) }).then(() => {
+            conn.connection.close();
+            resolve(url);
+          });
+        });
+      });
+    });
+  }
+
+  /**
+   * Gets the url of the campaign image
+   * @param campaignId id of the campaign
+   */
+  getCampaignImage(campaignId: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this.get(campaignId).then((campaign: Campaign) => {
+        resolve(campaign.image);
+      });
     });
   }
 }

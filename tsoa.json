@@ -31,6 +31,31 @@
               }
             ]
           }
+        },
+        "/campaigns/{campaignId}/campaignImage": {
+          "post": {
+            "consumes": ["multipart/form-data"],
+            "parameters": [
+              {
+                "in": "formData",
+                "name": "imageFile",
+                "required": true,
+                "type": "file"
+              },
+              {
+                "in": "query",
+                "name": "userToken",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "in": "path",
+                "name": "campaignId",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          }
         }
       }
     }
