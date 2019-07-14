@@ -22,7 +22,6 @@ export class TrainingService {
             }
           })
           .then((training: Training) => {
-            console.log();
             resolve(training);
           })
           .catch(e => {
@@ -34,7 +33,6 @@ export class TrainingService {
 
   create(campaignId: string, request: TrainingCreationRequest): Promise<Training> {
     return new Promise<Training>((resolve, reject) => {
-      console.log('thing');
       const userId = UserService.getUserIdFromToken(request.userToken);
       const hasCapability = UserConnector.userHasCapabilityForCampaigns(userId);
 
@@ -49,6 +47,8 @@ export class TrainingService {
 
               conn.get(campaignId).then((campaign: Campaign) => {
                 campaign.currentTrainingId = trainingId;
+
+                conn.save(campaign);
               });
 
               request.training.id = trainingId;
@@ -65,46 +65,39 @@ export class TrainingService {
 
   updateActive(campaignId: string, request: TrainingUpdateRequest): Promise<Training> {
     return new Promise<Training>((resolve, reject) => {
-      const userId = UserService.getUserIdFromToken(request.userToken);
-      const hasCapability = UserConnector.userHasCapabilityForCampaigns(userId);
+      CampaignConnector.getInstance((conn: CampaignConnector) => {
+        this.getActive(campaignId).then((training: Training) => {
+          training.currentStep = request.currentStep;
+          training.currentEpoch = request.currentEpoch;
+          training.finished = request.finished;
+          // @ts-ignore
+          training.id = training._id;
 
-      if (hasCapability) {
-        CampaignConnector.getInstance((conn: CampaignConnector) => {
-          this.getActive(campaignId).then((training: Training) => {
-            training.currentStep = request.currentStep;
-            training.currentEpoch = request.currentEpoch;
-            training.finished = request.finished;
+          if (request.metric) {
+            training.metrics.push(request.metric);
+          }
 
-            if (request.metric) {
-              training.metrics.push();
-            }
-
-            conn
-              .updateDocument(
-                this.collection,
-                { campaignId: ObjectId.createFromHexString(campaignId), active: true },
-                training
-              )
-              .then((result: any) => {
-                conn.get(campaignId).then(campaign => {
-                  // campaign.currentTrainingId = result
-                  console.log(result);
-                  if (!training.finished) {
-                    campaign.trainingInProgress = true;
-                  } else {
-                    campaign.trainingInProgress = false;
-                  }
-
-                  conn.save(campaign);
-                });
+          conn
+            .updateDocument(
+              this.collection,
+              // @ts-ignore
+              { _id: training.id },
+              training
+            )
+            .then((result: any) => {
+              conn.get(campaignId).then(campaign => {
+                campaign.currentTrainingId = training.id;
+                campaign.trainingInProgress = !training.finished;
+                console.log(campaign);
+                conn.save(campaign);
                 resolve(training);
-              })
-              .catch(e => {
-                reject(e);
               });
-          });
+            })
+            .catch(e => {
+              reject(e);
+            });
         });
-      }
+      });
     });
   }
 }

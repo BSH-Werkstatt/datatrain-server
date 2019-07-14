@@ -12,7 +12,6 @@ export class TrainingController extends Controller {
 
   @Post('{campaignId}')
   public async postActive(campaignId: string, @Body() request: TrainingCreationRequest) {
-    console.log('thing1');
     return await new TrainingService().create(campaignId, request);
   }
 

@@ -10,11 +10,9 @@ export interface Training {
   steps: number;
   metrics: string[];
   finished: boolean;
-  modelFile: string;
 }
 
 export interface TrainingUpdateRequest {
-  userToken: string;
   currentEpoch: number;
   currentStep: number;
   finished: boolean;
