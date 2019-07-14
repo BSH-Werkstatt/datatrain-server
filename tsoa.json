@@ -2,7 +2,7 @@
   "swagger": {
     "outputDirectory": "./dist",
     "entryFile": "./src/index.ts",
-    "host": "http://ios19bsh.ase.in.tum.de/dev/api",
+    "host": "http://api.datatrain.rocks",
     "basePath": "/docs",
     "specMerging": "recursive",
     "spec": {
@@ -47,6 +47,25 @@
                 "name": "userToken",
                 "required": true,
                 "type": "string"
+              },
+              {
+                "in": "path",
+                "name": "campaignId",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "/campaigns/{campaignId}/predictions": {
+          "post": {
+            "consumes": ["multipart/form-data"],
+            "parameters": [
+              {
+                "in": "formData",
+                "name": "imageFile",
+                "required": true,
+                "type": "file"
               },
               {
                 "in": "path",

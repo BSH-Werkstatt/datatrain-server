@@ -30,6 +30,7 @@ app.get('/images/:campaignId/:imageId.jpg', (req, res) => {
 app.get('/images/:imageId.jpg', (req, res) => {
   ImagesController.redirectToS3(req, res);
 });
+app.use('/predictions', express.static(__dirname + '/predictions'));
 
 app.use('/docs', express.static(__dirname + '/swagger-ui'));
 app.use('/swagger.json', (req, res) => {
