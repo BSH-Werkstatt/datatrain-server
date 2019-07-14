@@ -530,7 +530,7 @@ export class CampaignService {
         if (error) {
           reject(error);
         }
-        const url = 'http://backend_dev:80/predictions/' + request.file.filename;
+        const url = process.env.SELF_HOST + 'predictions/' + request.file.filename;
         console.log(url);
         this.get(campaignId).then(campaign => {
           if (campaign) {
@@ -552,7 +552,7 @@ export class CampaignService {
       const request = require('request');
       try {
         request.post(
-          'http://mldev:6000/predictions/',
+          process.env.ML_HOST + '/predictions/',
           {
             json: {
               imageURL: url,
@@ -571,14 +571,7 @@ export class CampaignService {
               const file = fs.createWriteStream(folder + path.basename(body.predictionURL));
               http.get(body.predictionURL, response => {
                 response.pipe(file);
-                if (os.hostname().includes('ase.in.tum.de')) {
-                  resolve({
-                    predictionURL:
-                      'http://ios19bsh.ase.in.tum.de/dev/api/predictions/' + path.basename(body.predictionURL)
-                  });
-                } else {
-                  resolve({ predictionURL: os.hostname() + '/predictions/' + path.basename(body.predictionURL) });
-                }
+                resolve({ predictionURL: process.env.SELF_HOST + 'predictions/' + path.basename(body.predictionURL) });
               });
             }
           }
