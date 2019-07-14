@@ -10,6 +10,9 @@ export class Campaign {
   description: string;
   taxonomy: string[];
   image: string;
+  trainingInProgress?: boolean;
+  currentTrainingId?: string;
+  currentModelFile?: string;
 
   constructor(
     id: string,
