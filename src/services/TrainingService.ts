@@ -88,7 +88,6 @@ export class TrainingService {
               conn.get(campaignId).then(campaign => {
                 campaign.currentTrainingId = training.id;
                 campaign.trainingInProgress = !training.finished;
-                console.log(campaign);
                 conn.save(campaign);
                 resolve(training);
               });
