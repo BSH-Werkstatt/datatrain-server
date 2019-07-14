@@ -2,7 +2,7 @@
   "swagger": {
     "outputDirectory": "./dist",
     "entryFile": "./src/index.ts",
-    "host": "http://ios19bsh.ase.in.tum.de/dev/api",
+    "host": "http://api.datatrain.rocks",
     "basePath": "/docs",
     "specMerging": "recursive",
     "spec": {
