@@ -97,7 +97,9 @@ export class CampaignConnector extends DatabaseConnector {
       urlName: campaign.urlName,
       description: campaign.description,
       taxonomy: campaign.taxonomy,
-      image: campaign.image
+      image: campaign.image,
+      currentTrainingId: campaign.currentTrainingId ? campaign.currentTrainingId : '',
+      trainingInProgress: campaign.trainingInProgress ? campaign.trainingInProgress : false
     };
 
     if (campaign.id) {

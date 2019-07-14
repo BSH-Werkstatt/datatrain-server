@@ -10,6 +10,8 @@ export class Campaign {
   description: string;
   taxonomy: string[];
   image: string;
+  trainingInProgress?: boolean;
+  currentTrainingId?: string;
 
   constructor(
     id: string,
@@ -19,7 +21,9 @@ export class Campaign {
     urlName: string,
     description: string,
     taxonomy: string[],
-    image: string
+    image: string,
+    trainingInProgress?: boolean,
+    currentTrainingId?: string
   ) {
     this.id = id;
     this.ownerId = ownerId;
@@ -29,6 +33,14 @@ export class Campaign {
     this.description = description;
     this.taxonomy = taxonomy;
     this.image = image;
+
+    if (trainingInProgress) {
+      this.trainingInProgress = trainingInProgress;
+    }
+
+    if (currentTrainingId) {
+      this.currentTrainingId = currentTrainingId;
+    }
   }
 
   static fromObject(object: any) {
@@ -40,7 +52,9 @@ export class Campaign {
       object.urlName,
       object.description,
       object.taxonomy,
-      object.image
+      object.image,
+      object.trainingInProgress ? object.trainingInProgress.toString() : false,
+      object.currentTrainingId ? object.currentTrainingId.toString() : null
     );
   }
 }
