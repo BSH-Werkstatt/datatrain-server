@@ -5,7 +5,7 @@ import { UserService } from './UserService';
 import { UserConnector } from '../db/UserConnector';
 import { CampaignConnector } from '../db/CampaignConnector';
 import { Campaign } from '../models/campaign';
-
+import http from 'http';
 export class TrainingService {
   collection = 'training';
 
@@ -41,18 +41,27 @@ export class TrainingService {
           const trainingWithoutId = request.training;
           delete trainingWithoutId.id;
           conn
-            .insertOne(this.collection, trainingWithoutId)
-            .then((result: any) => {
-              const trainingId = result.insertedId;
+            .get(campaignId)
+            .then((campaign: Campaign) => {
+              console.log(campaign);
+              if (!campaign.trainingInProgress) {
+                conn.insertOne(this.collection, trainingWithoutId).then((result: any) => {
+                  const trainingId = result.insertedId;
 
-              conn.get(campaignId).then((campaign: Campaign) => {
-                campaign.currentTrainingId = trainingId;
+                  campaign.currentTrainingId = trainingId;
+                  campaign.trainingInProgress = true;
+                  conn.save(campaign);
 
-                conn.save(campaign);
-              });
-
-              request.training.id = trainingId;
-              resolve(request.training);
+                  request.training.id = trainingId;
+                  console.log('started training');
+                  this.triggerTraining(campaign);
+                  resolve(request.training);
+                });
+              } else {
+                this.getActive(campaignId).then((training: Training) => {
+                  resolve(training);
+                });
+              }
             })
             .catch(e => {
               console.error('Error during training creation: ', e);
@@ -97,6 +106,35 @@ export class TrainingService {
             });
         });
       });
+    });
+  }
+
+  async triggerTraining(campaign: Campaign): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      const request = require('request');
+      try {
+        request.post(
+          process.env.ML_HOST + 'train/',
+          {
+            json: {
+              campaignId: campaign.id.toString(),
+              taxonomy: campaign.taxonomy
+            }
+          },
+          (error: any, res: any, body: any) => {
+            if (error) {
+              console.error(error);
+              reject(error);
+            }
+
+            if (body && body.training) {
+              resolve(body.training === parseInt(body.training, 10));
+            }
+          }
+        );
+      } catch (e) {
+        console.error('Error in POST request to ML server: ', e);
+      }
     });
   }
 }
