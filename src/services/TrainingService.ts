@@ -18,13 +18,16 @@ export class TrainingService {
             if (campaign.currentTrainingId) {
               return conn.findOne(this.collection, { _id: ObjectId.createFromHexString(campaign.currentTrainingId) });
             } else {
+              conn.connection.close();
               resolve(null);
             }
           })
           .then((training: Training) => {
+            conn.connection.close();
             resolve(training);
           })
           .catch(e => {
+            conn.connection.close();
             reject(e);
           });
       });
@@ -55,16 +58,19 @@ export class TrainingService {
                   request.training.id = trainingId;
                   console.log('started training');
                   this.triggerTraining(campaign);
+                  conn.connection.close();
                   resolve(request.training);
                 });
               } else {
                 this.getActive(campaignId).then((training: Training) => {
+                  conn.connection.close();
                   resolve(training);
                 });
               }
             })
             .catch(e => {
               console.error('Error during training creation: ', e);
+              conn.connection.close();
               reject(e);
             });
         });
@@ -98,10 +104,12 @@ export class TrainingService {
                 campaign.currentTrainingId = training.id;
                 campaign.trainingInProgress = !training.finished;
                 conn.save(campaign);
+                conn.connection.close();
                 resolve(training);
               });
             })
             .catch(e => {
+              conn.connection.close();
               reject(e);
             });
         });
