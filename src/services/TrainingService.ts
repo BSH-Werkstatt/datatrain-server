@@ -15,7 +15,7 @@ export class TrainingService {
       console.log(process.env.ML_HOST + '/train/');
       try {
         request.post(
-          process.env.ML_HOST + 'train/',
+          process.env.ML_HOST + '/train/',
           {
             json: {
               campaignId: campaign.id.toString(),
@@ -42,7 +42,7 @@ export class TrainingService {
   static async triggerAutomatedTraining(campaignId: string) {
     console.log(campaignId);
     CampaignConnector.getImagesSinceLastTraining(campaignId).then(imagesSinceLastTraining => {
-      if (imagesSinceLastTraining > 100) {
+      if (imagesSinceLastTraining > 10) {
         console.log('images since last training: ', imagesSinceLastTraining, '... triggering training...');
         const training: Training = {
           id: '', // will be completed by server
