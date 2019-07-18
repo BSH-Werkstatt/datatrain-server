@@ -20,9 +20,4 @@ export class TrainingController extends Controller {
   public async putActiveTraining(campaignId: string, @Body() request: TrainingUpdateRequest) {
     return await new TrainingService().updateActive(campaignId, request);
   }
-
-  @Get('test/{campaignId}')
-  public async test(campaignId: string) {
-    return await CampaignConnector.getImagesSinceLastTraining(campaignId);
-  }
 }

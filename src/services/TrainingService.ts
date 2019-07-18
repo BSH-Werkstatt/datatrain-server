@@ -12,7 +12,7 @@ export class TrainingService {
   static async triggerTraining(campaign: Campaign): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       const request = require('request');
-      console.log(process.env.ML_HOST + 'train/');
+      console.log(process.env.ML_HOST + '/train/');
       try {
         request.post(
           process.env.ML_HOST + 'train/',
