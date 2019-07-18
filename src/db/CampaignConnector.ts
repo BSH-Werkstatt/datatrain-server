@@ -2,6 +2,7 @@ import { Campaign } from '../models/campaign';
 import { DatabaseConnector } from './DatabaseConnector';
 import { ObjectID, ObjectId } from 'mongodb';
 import { DBConfig } from './dbconfig';
+import { Training } from '../models/training';
 
 export class CampaignConnector extends DatabaseConnector {
   collection = 'campaigns';
@@ -22,6 +23,65 @@ export class CampaignConnector extends DatabaseConnector {
     } catch (e) {
       console.error("Error while connecting, maybe database hasn't been started yet?", e);
     }
+  }
+
+  static getActiveTraining(campaignId: string): Promise<Training> {
+    return new Promise<Training>((resolve, reject) => {
+      CampaignConnector.getInstance((conn: CampaignConnector) => {
+        conn
+          .get(campaignId)
+          .then((campaign: Campaign) => {
+            if (campaign && campaign.currentTrainingId) {
+              return conn.findOne('training', { _id: ObjectId.createFromHexString(campaign.currentTrainingId) });
+            } else {
+              conn.connection.close();
+              resolve(null);
+            }
+          })
+          .then((training: Training) => {
+            conn.connection.close();
+            resolve(training);
+          })
+          .catch(e => {
+            conn.connection.close();
+            reject(e);
+          });
+      });
+    });
+  }
+
+  static getImagesSinceLastTraining(campaignId: string): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      CampaignConnector.getActiveTraining(campaignId).then(training => {
+        let lastDate: string;
+
+        if (training) {
+          lastDate = training.timeStart;
+        } else {
+          lastDate = '';
+        }
+
+        CampaignConnector.getInstance((conn: CampaignConnector) => {
+          const query = {
+            campaignId: ObjectId.createFromHexString(campaignId),
+            timestamp: { $gt: lastDate }
+          };
+
+          conn.db
+            .collection('images')
+            .find(query)
+            .toArray((err: any, result: any) => {
+              if (err) {
+                resolve(0);
+                throw err;
+              }
+
+              conn.connection.close();
+              resolve(result.length);
+            });
+        });
+      });
+    });
   }
 
   /**
