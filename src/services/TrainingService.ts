@@ -42,7 +42,7 @@ export class TrainingService {
   static async triggerAutomatedTraining(campaignId: string) {
     console.log(campaignId);
     CampaignConnector.getImagesSinceLastTraining(campaignId).then(imagesSinceLastTraining => {
-      if (imagesSinceLastTraining > 10) {
+      if (imagesSinceLastTraining > 100) {
         console.log('images since last training: ', imagesSinceLastTraining, '... triggering training...');
         const training: Training = {
           id: '', // will be completed by server
