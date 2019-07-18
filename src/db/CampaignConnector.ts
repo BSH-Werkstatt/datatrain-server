@@ -152,7 +152,7 @@ export class CampaignConnector extends DatabaseConnector {
     const self = {
       id: campaign.id,
       ownerId: campaign.ownerId,
-      type: campaign.type,
+      type: parseInt(campaign.type.toString(), 10),
       name: campaign.name,
       urlName: campaign.urlName,
       description: campaign.description,
