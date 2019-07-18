@@ -22,6 +22,7 @@ import jo from 'jpeg-autorotate';
 import { UserConnector } from '../db/UserConnector';
 import { User, USER_TYPES } from '../models/user';
 import { ObjectId } from 'bson';
+import { TrainingService } from './TrainingService';
 
 export class CampaignService {
   /**
@@ -267,6 +268,8 @@ export class CampaignService {
               image.url = url;
               image.id = imageId;
               image.save((result: any) => {
+                TrainingService.triggerAutomatedTraining(campaignId);
+
                 resolve(imageData);
               });
 
