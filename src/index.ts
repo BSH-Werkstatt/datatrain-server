@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 // @ts-ignore
 import { RegisterRoutes } from './routes';
 import { ImagesController } from './controller/ImagesController';
+import { UserService } from './services/UserService';
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -24,12 +25,29 @@ app.use((req, res, next) => {
 });
 
 app.get('/images/:campaignId/:imageId.jpg', (req, res) => {
-  ImagesController.redirectToS3(req, res);
+  if (req.query.userToken) {
+    UserService.validateUserToken(req.query.userToken).then(valid => {
+      if (valid) {
+        ImagesController.serveFromS3(req, res);
+      } else {
+        res.json({ error: 'Invalid user token' });
+      }
+    });
+  }
 });
 
 app.get('/images/:imageId.jpg', (req, res) => {
-  ImagesController.redirectToS3(req, res);
+  if (req.query.userToken) {
+    UserService.validateUserToken(req.query.userToken).then(valid => {
+      if (valid) {
+        ImagesController.serveFromS3(req, res);
+      } else {
+        res.json({ error: 'Invalid user token' });
+      }
+    });
+  }
 });
+
 app.use('/predictions', express.static(__dirname + '/predictions'));
 
 app.use('/docs', express.static(__dirname + '/swagger-ui'));
