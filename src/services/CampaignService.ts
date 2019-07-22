@@ -189,7 +189,16 @@ export class CampaignService {
    * @param campaignId Identifier of the campaign to which the image is uploaded to
    * @param request Express request with the uploaded image file (request.file)
    */
-  uploadImage(campaignId: string, request: express.Request, doNotAddScore?: boolean): Promise<ImageData> {
+  uploadImage(
+    campaignId: string,
+    request: express.Request,
+    doNotAddScore?: boolean,
+    makePublic?: boolean
+  ): Promise<ImageData> {
+    if (!makePublic) {
+      makePublic = false;
+    }
+
     return new Promise((resolve, reject) => {
       // @ts-ignore
       const userToken = request.query.userToken;
@@ -262,7 +271,7 @@ export class CampaignService {
               return null;
             })
             .then(res => {
-              return s3.uploadImageByPath(filename, imageId);
+              return s3.uploadImageByPath(filename, imageId, makePublic);
             })
             .then(url => {
               image.url = url;
@@ -592,7 +601,7 @@ export class CampaignService {
    */
   uploadCampaignImage(campaignId: string, request: express.Request): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      this.uploadImage(campaignId, request, false).then((imageData: ImageData) => {
+      this.uploadImage(campaignId, request, false, true).then((imageData: ImageData) => {
         const url = imageData.url;
 
         ImageConnector.getInstance((conn: ImageConnector) => {

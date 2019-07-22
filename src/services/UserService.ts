@@ -11,6 +11,26 @@ export class UserService {
     return userToken;
   }
 
+  static validateUserToken(userToken: string): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      if (userToken) {
+        const userId = UserService.getUserIdFromToken(userToken);
+
+        const service = new UserService();
+        service.getUserById(userId).then((user: User) => {
+          if (user && user.name !== 'ERROR_NOT_FOUND') {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        });
+        return true;
+      } else {
+        resolve(false);
+      }
+    });
+  }
+
   /**
    * creates user according to CreateUserRequest
    * @param request CreateUserRequest
