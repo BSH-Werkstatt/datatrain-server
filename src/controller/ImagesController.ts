@@ -31,12 +31,14 @@ export class ImagesController {
         .then((imageData: ImageData) => {
           if (imageData) {
             s3.getImage(req.params.imageId).then((image: any) => {
+              conn.connection.close();
               const stream = ImagesController.bufferToStream(image.Body);
               res.statusCode = '200';
               res.setHeader('Content-Type', 'image/jpeg');
               stream.pipe(res);
             });
           } else {
+            conn.connection.close();
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: 'image with id ' + req.params.imageId + ' not found' }));
           }
