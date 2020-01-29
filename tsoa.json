@@ -82,6 +82,7 @@
   "routes": {
     "basePath": "/",
     "entryFile": "./src/index.ts",
-    "routesDir": "./src"
+    "routesDir": "./src",
+    "authenticationModule": "./src/authentication.ts"
   }
 }

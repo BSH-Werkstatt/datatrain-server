@@ -21,7 +21,8 @@ export class UserConnector extends DatabaseConnector {
           })
           .catch(e => {
             console.error('Error fetching user capabilities: ', e);
-            throw e;
+            // throw e;
+            rej(e); // fixing promise handling err
           });
       });
     });
