@@ -119,8 +119,6 @@ export class UserService {
         rp(options)
           .then(userData => {
             const user = userData;
-            console.log('from userservice.ts....');
-            console.log(user);
             token = sign(
               {
                 id: email,
@@ -131,11 +129,21 @@ export class UserService {
             ); // @TODO: ask and change the exp time
             resolve({
               token,
-              user
+              user: {
+                firstName: user['first-name'],
+                lastName: user['last-name'],
+                displayName: user['display-name'],
+                email: user.email
+              }
             });
           })
           .catch(err => {
-            reject(err);
+            const errorResponse = {
+              statusCode: err.statusCode,
+              message: err.message
+            };
+            console.log(errorResponse);
+            reject(errorResponse);
           });
       } catch (error) {
         reject(error);
