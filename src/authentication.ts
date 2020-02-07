@@ -2,6 +2,11 @@ import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
 // import Userservice from './services/UserService'
 const secretKey = process.env.JWT_SECRET_TOKEN_1;
+/**
+ * @TODO : check the token is there in the db
+ * @TODO : if it is in the db then reject with the expired token message
+ * @TODO : if not there then do the rest of the thing
+ */
 export function expressAuthentication(request: express.Request, securityName: string, scopes?: string[]): Promise<any> {
   if (securityName === 'api_token') {
     console.log('indide api_token form authntication.ts');
@@ -11,7 +16,6 @@ export function expressAuthentication(request: express.Request, securityName: st
   if (securityName === 'jwt') {
     let token =
       request.body.token || request.query.token || request.headers['x-access-token'] || request.headers.authorization;
-    // console.log('token is ', token, 'from authntication.ts...');
     let refreshToken = request.headers['x-refresh-token'] as string; // typecast it into string
     //  or request.headers['x-refresh-token'] as string
     if (!token && !refreshToken) {
@@ -33,7 +37,6 @@ export function expressAuthentication(request: express.Request, securityName: st
         jwt.verify(token, secretKey, (err: any, decoded: any) => {
           if (err) {
             // check the error type
-            // console.log(err.name);
             if (err.name === 'TokenExpiredError') {
               // go and check the refresh token
               jwt.verify(refreshToken, process.env.JWT_SECRET_TOKEN_2, (error, decode) => {
