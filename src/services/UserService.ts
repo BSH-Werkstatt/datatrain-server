@@ -1,6 +1,7 @@
 import { CreateUserRequest, User } from '../models/user';
 import { UserConnector } from '../db/UserConnector';
 import { sign } from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import rp = require('request-promise'); // because request if already used in parameter
 // import { resolve } from 'dns';
 // import { rejects } from 'assert';
@@ -92,12 +93,76 @@ export class UserService {
       });
     });
   }
+  // generate JWT Token
+  async generateTokne(userEmail: string, secret1: string, secret2: string): Promise<any> {
+    const createToken = sign(
+      {
+        id: userEmail,
+        scopes: ['user'] // for now scope is user only
+      },
+      secret1,
+      { expiresIn: '1m' }
+    );
+    const createRefreshToken = sign(
+      {
+        id: userEmail,
+        scopes: ['user']
+      },
+      secret2,
+      { expiresIn: '7d' }
+    );
 
+    return Promise.all([createToken, createRefreshToken]);
+  }
+  // refresh the current token
+  async refreshJWTToken(token: string, refreshToken: string, secret1: string, secret2: string): Promise<any> {
+    // let userId : any = -1;
+    // try {
+    //   const userObject : any = jwt.decode(refreshToken);
+    //   userId = userObject.id;
+    // } catch (err) {
+    //   return {};
+    // }
+    // if(!userId) {
+    //   return {};
+    // }
+    // @TODO : get the user from data base then move forward
+    // to get The current id : crating an interface
+    interface JwtData {
+      id: string;
+      scopes: string[];
+      iat: number;
+      exp: number;
+    }
+    // @TODO
+
+    // const refreshSecret : string  = secret2;
+    let id = '';
+    try {
+      jwt.verify(refreshToken, secret2, (err, data: JwtData) => {
+        if (err) {
+          // console.log('from Userservice->refreshJWT from jwt.verify err', err)
+        } else {
+          // console.log('from Userservice->refreshJWT from jwt.verify data', data)
+          id = data.id;
+        }
+      });
+    } catch (err) {
+      return err;
+    }
+    // console.log('refresh token data from Userservice->refreshJWT id is ', id);
+    const [newToken, newRefreshToken] = await this.generateTokne(id, secret1, secret2);
+    console.log(' new token and new refresh token data from Userservice->refreshJWT id is ', newToken, newRefreshToken);
+    return {
+      token: newToken,
+      refreshToken: newRefreshToken,
+      id // @TODO send the entire user information
+    };
+  }
   // Login route using crowd
   async loginUser(email: string, password: string): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let token: any = null;
         const options = {
           method: 'POST',
           uri:
@@ -117,18 +182,26 @@ export class UserService {
           json: true // Automatically stringifies the body to JSON
         };
         rp(options)
-          .then(userData => {
+          .then(async userData => {
             const user = userData;
-            token = sign(
-              {
-                id: email,
-                scopes: ['user']
-              },
-              'secret',
-              { expiresIn: 60 * 60 }
-            ); // @TODO: ask and change the exp time
+            // token = sign(
+            //   {
+            //     id: email,
+            //     scopes: ['user']
+            //   },
+            //   process.env.JWT_SECRET_TOKEN_1,
+            //   { expiresIn: 60 * 60 }
+            // ); // @TODO: ask and change the exp time
+            const [token, refreshToken] = await this.generateTokne(
+              email,
+              process.env.JWT_SECRET_TOKEN_1,
+              process.env.JWT_SECRET_TOKEN_2
+            );
+            // if user is logged in then store the required info in the db
+            // chek information is there or not
             resolve({
               token,
+              refreshToken,
               user: {
                 firstName: user['first-name'],
                 lastName: user['last-name'],
@@ -138,6 +211,7 @@ export class UserService {
             });
           })
           .catch(err => {
+            console.log('form userservice', err);
             const errorResponse = {
               statusCode: err.statusCode,
               message: err.message
@@ -149,28 +223,6 @@ export class UserService {
         reject(error);
       }
     });
-    // const user = await User.findOne({ where: { email } });
-    // verify the user from crowd
-
-    // const user: any = {
-    //   id: 'some@email.com',
-    // }; // make a request to the crowd api @TODO
-
-    // console.log('inside userservice ts')
-    // console.log(token);
-    // // return token;
-    // return new Promise((resolve, reject) => {
-    //   if (token) {
-    //     resolve({
-    //       token,
-    //       user
-    //     });
-    //   } else {
-    //     reject({
-    //       message: 'unknown error'
-    //     });
-    //   }
-    // });
   }
   protectedService(): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
