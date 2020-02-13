@@ -2,7 +2,6 @@ import { Campaign } from '../models/campaign';
 import { DatabaseConnector } from './DatabaseConnector';
 import { ImageConnector } from './ImageConnector';
 import { ImageData } from '../models/data';
-
 import fs from 'fs';
 import jo from 'jpeg-autorotate';
 
@@ -18,9 +17,10 @@ export class Initializer {
       '--------------------------------------\n--- INITIALIZATION PROCESS STARTED ---\n--------------------------------------\n'
     );
 
-    let DBInit: { users: any[]; campaigns: any[] } = {
+    let DBInit: { users: any[]; campaigns: any[]; token: any[] } = {
       users: [],
-      campaigns: []
+      campaigns: [],
+      token: []
     };
 
     try {
@@ -110,6 +110,12 @@ export class Initializer {
             campaign.id = insertedCampaignIds[i];
             this.initCampaignFiles(campaign, adminId);
           });
+          const tokens: object[] = DBInit.token;
+          console.log(`.......Inserting ${tokens.length} sample blacklisted token ...............`);
+          return conn.insertMany('tokens', tokens);
+        })
+        .then((result: any) => {
+          console.log(`.........Inserted ${result.insertedCount} toke........`);
         })
         .catch(e => {
           console.error('Error during init: ', e);

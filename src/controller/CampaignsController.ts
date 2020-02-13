@@ -11,9 +11,9 @@ import { Initializer } from '../db/Initializer';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
-  @Security('jwt', ['user'])
-  @Response('401', 'Unathorized')
-  @SuccessResponse('200', 'OK')
+  // @Security('jwt', ['user'])
+  // @Response('401', 'Unathorized')
+  // @SuccessResponse('200', 'OK') @TODO: remove s
   @Get('initialize')
   public async initialize(): Promise<boolean> {
     console.log('Initialization triggered.');
