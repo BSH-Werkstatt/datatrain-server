@@ -27,14 +27,7 @@ export class UsersController extends Controller {
     }
     return await new UserService().loginUser(requestBody.username, requestBody.password);
   }
-  @Security('jwt', ['user'])
-  @Response('401', 'Unathorized')
-  @SuccessResponse('200', 'OK')
-  @Get('myuserroute')
-  public async protected(): Promise<any> {
-    console.log('protected Route');
-    return await new UserService().protectedService();
-  }
+
   // moving at the end
   @Get('{userId}')
   public async getUserById(userId: string): Promise<User> {
