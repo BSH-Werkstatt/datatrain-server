@@ -26,69 +26,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(async (req, res, next) => {
-  let token = req.body.token || req.query.token || req.headers['x-access-token'] || req.headers.authorization;
-  let refreshToken = req.headers['x-refresh-token'] as string;
-  if (token) {
-    if (token.includes('Bearer ')) {
-      token = token.split(' ')[1];
-    }
-    try {
-      const decode = jwt.verify(token, process.env.JWT_SECRET_TOKEN_1);
-      (req as any).user = decode;
-    } catch (err) {
-      if (err.name === 'TokenExpiredError') {
-        if (refreshToken) {
-          if (refreshToken.includes('Bearer ')) {
-            refreshToken = refreshToken.split(' ')[1];
-          }
-          // const isTokenAlreadyBlacklisted = await UserService.checkBlacklistUserToken(refreshToken);
-          UserService.checkBlacklistUserToken(refreshToken)
-            .then(async () => {
-              // tslint:disable-next-line:max-line-length
-              const newTokens = await new UserService().refreshJWTToken(
-                token,
-                refreshToken,
-                process.env.JWT_SECRET_TOKEN_1,
-                process.env.JWT_SECRET_TOKEN_2
-              );
-              if (newTokens.token && newTokens.refreshToken) {
-                res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
-                res.set('x-token', newTokens.token);
-                res.set('x-refresh-token', newTokens.refreshToken);
-                (req as any).user = newTokens.id; // @TODO : send the entire userinformation
-                // blacklist token here
-                const isBlacklisted: boolean = await UserService.blacklistUserToken(refreshToken);
-                if (!isBlacklisted) {
-                  res.status(401).json({
-                    name: 'Unable to blacklist token'
-                  });
-                  console.log('Unable to blacklist token');
-                }
-              }
-            })
-            .catch(() => {
-              (req as any).user = null;
-              res.status(400).json({
-                name: 'Token blacklisted',
-                message: 'token already blacklisted'
-              });
-            });
-        } else {
-          res.status(400).json({
-            name: 'RefreshTokenNotFound',
-            message: 'Unable to find the refresh token inside global middleware'
-          });
-        }
-      }
-    }
-  }
-  // @TODO: ** important delete the previosly generated token
-  /*
-   * @TODO : insert the token into database
-   */
-  next();
-});
 app.get('/images/:campaignId/:imageId.jpg', (req, res) => {
   if (req.query.userToken) {
     UserService.validateUserToken(req.query.userToken).then(valid => {

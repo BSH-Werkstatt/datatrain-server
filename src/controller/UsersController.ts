@@ -15,9 +15,6 @@ export class UsersController extends Controller {
   public async createUser(@Body() request: CreateUserRequest): Promise<User> {
     return await new UserService().createUser(request);
   }
-  // New Auth Login
-  @SuccessResponse('200', 'OK')
-  @Response('401', 'Unathorized')
   @Post('/login')
   public async loginUser(@Body() requestBody: any): Promise<any> {
     if (!requestBody.username || !requestBody.password) {

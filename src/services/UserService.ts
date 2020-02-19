@@ -1,10 +1,5 @@
 import { CreateUserRequest, User } from '../models/user';
 import { UserConnector } from '../db/UserConnector';
-import { sign } from 'jsonwebtoken';
-import * as jwt from 'jsonwebtoken';
-import rp = require('request-promise'); // because request if already used in parameter
-import { TokenConnector } from '../db/TokenConnector';
-import { Token } from '../models/token';
 import { getTokenSourceMapRange } from 'typescript';
 export class UserService {
   /**
@@ -32,42 +27,6 @@ export class UserService {
         return true;
       } else {
         resolve(false);
-      }
-    });
-  }
-  static blacklistUserToken(userToken: string): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      console.log('Inside User Service->blacklistUserToken user token is ', userToken);
-      if (userToken) {
-        const token = new Token(userToken);
-        token.save((savedToken: Token) => {
-          console.log('******Token Saved********* with', savedToken, token);
-          resolve(true);
-        });
-      } else {
-        resolve(false);
-      }
-    });
-  }
-  static checkBlacklistUserToken(userToken: string): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      console.log('Inside User Service->CheckBlacklistUserToken token is ', userToken);
-      if (userToken) {
-        TokenConnector.getInstance((db: TokenConnector) => {
-          db.get(userToken)
-            .then(tokenData => {
-              console.log('found user token with token data', tokenData);
-              if (tokenData) {
-                reject(false);
-              } else {
-                resolve(true);
-              }
-            })
-            .catch(err => {
-              console.log('Unable to find the token err', err.name);
-              resolve(true);
-            });
-        });
       }
     });
   }
@@ -129,135 +88,11 @@ export class UserService {
       });
     });
   }
-  // generate JWT Token
-  async generateTokne(userEmail: string, secret1: string, secret2: string): Promise<any> {
-    const createToken = sign(
-      {
-        id: userEmail,
-        scopes: ['user'] // for now scope is user only
-      },
-      secret1,
-      { expiresIn: '1m' }
-    );
-    const createRefreshToken = sign(
-      {
-        id: userEmail,
-        scopes: ['user']
-      },
-      secret2,
-      { expiresIn: '7d' }
-    );
-
-    return Promise.all([createToken, createRefreshToken]);
-  }
-  // refresh the current token
-  async refreshJWTToken(token: string, refreshToken: string, secret1: string, secret2: string): Promise<any> {
-    // let userId : any = -1;
-    // try {
-    //   const userObject : any = jwt.decode(refreshToken);
-    //   userId = userObject.id;
-    // } catch (err) {
-    //   return {};
-    // }
-    // if(!userId) {
-    //   return {};
-    // }
-    // @TODO : get the user from data base then move forward
-    // to get The current id : crating an interface
-    interface JwtData {
-      id: string;
-      scopes: string[];
-      iat: number;
-      exp: number;
-    }
-    // @TODO
-
-    // const refreshSecret : string  = secret2;
-    let id = '';
-    try {
-      jwt.verify(refreshToken, secret2, (err, data: JwtData) => {
-        if (err) {
-          // console.log('from Userservice->refreshJWT from jwt.verify err', err)
-        } else {
-          // console.log('from Userservice->refreshJWT from jwt.verify data', data)
-          id = data.id;
-        }
-      });
-    } catch (err) {
-      return err;
-    }
-    // console.log('refresh token data from Userservice->refreshJWT id is ', id);
-    const [newToken, newRefreshToken] = await this.generateTokne(id, secret1, secret2);
-    console.log(' new token and new refresh token data from Userservice->refreshJWT id is ', newToken, newRefreshToken);
-    return {
-      token: newToken,
-      refreshToken: newRefreshToken,
-      id // @TODO send the entire user information
-    };
-  }
   // Login route using crowd
+  // @TODO : Top priority *********Important
   async loginUser(email: string, password: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      try {
-        const options = {
-          method: 'POST',
-          uri:
-            'https://' +
-            process.env.CROWD_AAP +
-            ':' +
-            process.env.CROWD_PASS +
-            '@id.bsh-sdd.com/crowd/rest/usermanagement/1/authentication?username=' +
-            email,
-          body: {
-            value: password
-          },
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          },
-          json: true // Automatically stringifies the body to JSON
-        };
-        rp(options)
-          .then(async userData => {
-            const user = userData;
-            // token = sign(
-            //   {
-            //     id: email,
-            //     scopes: ['user']
-            //   },
-            //   process.env.JWT_SECRET_TOKEN_1,
-            //   { expiresIn: 60 * 60 }
-            // ); // @TODO: ask and change the exp time
-            const [token, refreshToken] = await this.generateTokne(
-              email,
-              process.env.JWT_SECRET_TOKEN_1,
-              process.env.JWT_SECRET_TOKEN_2
-            );
-            // if user is logged in then store the required info in the db
-            // chek information is there or not
-            resolve({
-              token,
-              refreshToken,
-              user: {
-                firstName: user['first-name'],
-                lastName: user['last-name'],
-                displayName: user['display-name'],
-                email: user.email
-              }
-            });
-          })
-          .catch(err => {
-            console.log('form userservice', err);
-            const errorResponse = {
-              statusCode: err.statusCode,
-              message: err.message
-            };
-            console.log(errorResponse);
-            reject(errorResponse);
-          });
-      } catch (error) {
-        reject(error);
-      }
+      return true;
     });
   }
   protectedService(): Promise<any> {

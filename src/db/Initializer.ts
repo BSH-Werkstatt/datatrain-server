@@ -17,10 +17,9 @@ export class Initializer {
       '--------------------------------------\n--- INITIALIZATION PROCESS STARTED ---\n--------------------------------------\n'
     );
 
-    let DBInit: { users: any[]; campaigns: any[]; token: any[] } = {
+    let DBInit: { users: any[]; campaigns: any[] } = {
       users: [],
-      campaigns: [],
-      token: []
+      campaigns: []
     };
 
     try {
@@ -110,12 +109,6 @@ export class Initializer {
             campaign.id = insertedCampaignIds[i];
             this.initCampaignFiles(campaign, adminId);
           });
-          const tokens: object[] = DBInit.token;
-          console.log(`.......Inserting ${tokens.length} sample blacklisted token ...............`);
-          return conn.insertMany('tokens', tokens);
-        })
-        .then((result: any) => {
-          console.log(`.........Inserted ${result.insertedCount} toke........`);
         })
         .catch(e => {
           console.error('Error during init: ', e);

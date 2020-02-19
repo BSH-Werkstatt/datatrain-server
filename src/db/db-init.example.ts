@@ -21,7 +21,6 @@ const fridgeCampaignUsers = [
   { name: 'The Doctor', email: 'john.smith@bshg.de' },
   { name: 'Mr.Lorem Ipsum', email: 'max.mustermann@bshg.de' }
 ];
-const token = [{ token: 'dflbfdhjghdfkjbfdjkghdfjvdfjhvdfjkvbdfzjkvgdfgbjdkfgdfjkg' }];
 export default {
   users: adminUsers.concat(devUsers).concat(fridgeCampaignUsers),
   campaigns: [
@@ -102,6 +101,5 @@ export default {
       urlName: 'dummy-developers',
       users: devUsers.concat(adminUsers)
     }
-  ],
-  token
+  ]
 };
