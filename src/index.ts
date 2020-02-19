@@ -42,19 +42,38 @@ app.use(async (req, res, next) => {
           if (refreshToken.includes('Bearer ')) {
             refreshToken = refreshToken.split(' ')[1];
           }
-          // tslint:disable-next-line:max-line-length
-          const newTokens = await new UserService().refreshJWTToken(
-            token,
-            refreshToken,
-            process.env.JWT_SECRET_TOKEN_1,
-            process.env.JWT_SECRET_TOKEN_2
-          );
-          if (newTokens.token && newTokens.refreshToken) {
-            res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
-            res.set('x-token', newTokens.token);
-            res.set('x-refresh-token', newTokens.refreshToken);
-            (req as any).user = newTokens.id; // @TODO : send the entire userinformation
-          }
+          // const isTokenAlreadyBlacklisted = await UserService.checkBlacklistUserToken(refreshToken);
+          UserService.checkBlacklistUserToken(refreshToken)
+            .then(async () => {
+              // tslint:disable-next-line:max-line-length
+              const newTokens = await new UserService().refreshJWTToken(
+                token,
+                refreshToken,
+                process.env.JWT_SECRET_TOKEN_1,
+                process.env.JWT_SECRET_TOKEN_2
+              );
+              if (newTokens.token && newTokens.refreshToken) {
+                res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
+                res.set('x-token', newTokens.token);
+                res.set('x-refresh-token', newTokens.refreshToken);
+                (req as any).user = newTokens.id; // @TODO : send the entire userinformation
+                // blacklist token here
+                const isBlacklisted: boolean = await UserService.blacklistUserToken(refreshToken);
+                if (!isBlacklisted) {
+                  res.status(401).json({
+                    name: 'Unable to blacklist token'
+                  });
+                  console.log('Unable to blacklist token');
+                }
+              }
+            })
+            .catch(() => {
+              (req as any).user = null;
+              res.status(400).json({
+                name: 'Token blacklisted',
+                message: 'token already blacklisted'
+              });
+            });
         } else {
           res.status(400).json({
             name: 'RefreshTokenNotFound',
@@ -95,7 +114,7 @@ app.get('/images/:imageId.jpg', (req, res) => {
 });
 
 app.use('/predictions', express.static(__dirname + '/predictions'));
-
+console.log(__dirname);
 app.use('/docs', express.static(__dirname + '/swagger-ui'));
 app.use('/swagger.json', (req, res) => {
   res.sendFile(__dirname + '/swagger.json');

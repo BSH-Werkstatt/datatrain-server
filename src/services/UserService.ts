@@ -3,8 +3,9 @@ import { UserConnector } from '../db/UserConnector';
 import { sign } from 'jsonwebtoken';
 import * as jwt from 'jsonwebtoken';
 import rp = require('request-promise'); // because request if already used in parameter
-// import { resolve } from 'dns';
-// import { rejects } from 'assert';
+import { TokenConnector } from '../db/TokenConnector';
+import { Token } from '../models/token';
+import { getTokenSourceMapRange } from 'typescript';
 export class UserService {
   /**
    * Returns the ID of the user to whom the passed token belongs to.
@@ -34,7 +35,42 @@ export class UserService {
       }
     });
   }
-
+  static blacklistUserToken(userToken: string): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      console.log('Inside User Service->blacklistUserToken user token is ', userToken);
+      if (userToken) {
+        const token = new Token(userToken);
+        token.save((savedToken: Token) => {
+          console.log('******Token Saved********* with', savedToken, token);
+          resolve(true);
+        });
+      } else {
+        resolve(false);
+      }
+    });
+  }
+  static checkBlacklistUserToken(userToken: string): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      console.log('Inside User Service->CheckBlacklistUserToken token is ', userToken);
+      if (userToken) {
+        TokenConnector.getInstance((db: TokenConnector) => {
+          db.get(userToken)
+            .then(tokenData => {
+              console.log('found user token with token data', tokenData);
+              if (tokenData) {
+                reject(false);
+              } else {
+                resolve(true);
+              }
+            })
+            .catch(err => {
+              console.log('Unable to find the token err', err.name);
+              resolve(true);
+            });
+        });
+      }
+    });
+  }
   /**
    * creates user according to CreateUserRequest
    * @param request CreateUserRequest

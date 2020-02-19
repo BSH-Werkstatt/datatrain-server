@@ -13,7 +13,7 @@ import { Initializer } from '../db/Initializer';
 export class CampaignsController extends Controller {
   // @Security('jwt', ['user'])
   // @Response('401', 'Unathorized')
-  // @SuccessResponse('200', 'OK') @TODO: remove s
+  // @SuccessResponse('200', 'OK') @TODO: remove comments when done
   @Get('initialize')
   public async initialize(): Promise<boolean> {
     console.log('Initialization triggered.');

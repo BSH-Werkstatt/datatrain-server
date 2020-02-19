@@ -30,7 +30,7 @@ export class TokenConnector extends DatabaseConnector {
    */
   get(token: string): Promise<Token> {
     return new Promise((resolve, reject) => {
-      this.findOne(this.collection, { token: { $qe: token } })
+      this.findOne(this.collection, { token: { token } })
         .then(result => {
           if (result) {
             resolve(Token.fromObject(result));
