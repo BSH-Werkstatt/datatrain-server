@@ -24,7 +24,10 @@ export class UsersController extends Controller {
     }
     return await new UserService().loginUser(requestBody.username, requestBody.password);
   }
-
+  @Get('groups/{userGroup}')
+  public async getUserGroup(userGroup: string): Promise<any> {
+    return await new UserService().getUserGroup(userGroup);
+  }
   // moving at the end
   @Get('{userId}')
   public async getUserById(userId: string): Promise<User> {

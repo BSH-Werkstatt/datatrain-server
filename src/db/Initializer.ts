@@ -6,6 +6,8 @@ import fs from 'fs';
 import jo from 'jpeg-autorotate';
 
 import { S3ImageService } from '../services/S3ImageService';
+import dbInit from './db-init';
+import { CommandCursor } from 'mongodb';
 
 export class Initializer {
   /**
@@ -17,9 +19,10 @@ export class Initializer {
       '--------------------------------------\n--- INITIALIZATION PROCESS STARTED ---\n--------------------------------------\n'
     );
 
-    let DBInit: { users: any[]; campaigns: any[] } = {
+    let DBInit: { users: any[]; campaigns: any[]; userGroup: any[] } = {
       users: [],
-      campaigns: []
+      campaigns: [],
+      userGroup: []
     };
 
     try {
@@ -101,10 +104,15 @@ export class Initializer {
         })
         .then((result: any) => {
           console.log(`Inserted ${result.insertedCount} leaderboards...`);
-          const adminId = insertedUserIds[0]; // assumed
           // conn.connection.close();
-
+          // process usergroup
+          console.log(`inserting ${DBInit.userGroup.length} userGroups.......`);
+          return conn.insertMany('userGroup', dbInit.userGroup);
+        })
+        .then((result: any) => {
+          console.log(`Inserted ${result.length} usergroup......`);
           // process campaign data
+          const adminId = insertedUserIds[0]; // assumed
           insertedCampaigns.forEach((campaign, i) => {
             campaign.id = insertedCampaignIds[i];
             this.initCampaignFiles(campaign, adminId);

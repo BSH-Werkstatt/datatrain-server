@@ -1,5 +1,7 @@
 import { CreateUserRequest, User } from '../models/user';
 import { UserConnector } from '../db/UserConnector';
+import { UserGroupConnector } from '../db/UsergroupConnector';
+import { CreateUserGroupRequest } from '../models/usergroup';
 import { getTokenSourceMapRange } from 'typescript';
 export class UserService {
   /**
@@ -90,11 +92,7 @@ export class UserService {
   }
   // Login route using crowd
   // @TODO : Top priority *********Important
-  async loginUser(email: string, password: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      return true;
-    });
-  }
+  async loginUser(email: string, password: string): Promise<any> {}
   protectedService(): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       const flag = true;
@@ -103,6 +101,23 @@ export class UserService {
       } else {
         reject('you cant reach here');
       }
+    });
+  }
+  getUserGroup(userGroup: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      UserGroupConnector.getInstance((db: UserGroupConnector) => {
+        db.getUserGroupByName(userGroup)
+          .then(result => {
+            db.connection.close();
+
+            if (!result) {
+              resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
+            } else {
+              resolve(result);
+            }
+          })
+          .catch(e => reject(e));
+      });
     });
   }
 }
