@@ -120,4 +120,19 @@ export class UserService {
       });
     });
   }
+  saveUserGroup(userGroup: string): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      UserGroupConnector.getInstance((db: UserGroupConnector) => {
+        db.saveUserGroup(userGroup)
+          .then(res => {
+            if (res) {
+              resolve(true);
+            }
+          })
+          .catch(err => {
+            console.log(`Failed to save  usergroup : ${err}`);
+          });
+      });
+    });
+  }
 }

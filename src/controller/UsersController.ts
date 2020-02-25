@@ -1,6 +1,7 @@
 import { Get, Route, Post, Controller, Request, Body, SuccessResponse, Response, Security } from 'tsoa';
 import { User, CreateUserRequest } from '../models/user';
 import { UserService } from '../services/UserService';
+import { UserGroup, CreateUserGroupRequest } from '../models/usergroup';
 import { rejects } from 'assert';
 import { json } from 'body-parser';
 
@@ -25,8 +26,12 @@ export class UsersController extends Controller {
     return await new UserService().loginUser(requestBody.username, requestBody.password);
   }
   @Get('groups/{userGroup}')
-  public async getUserGroup(userGroup: string): Promise<any> {
+  public async getUserGroup(userGroup: string): Promise<UserGroup[]> {
     return await new UserService().getUserGroup(userGroup);
+  }
+  @Post('groups')
+  public async saveUserGroup(@Body() requestBody: any): Promise<boolean> {
+    return await new UserService().saveUserGroup(requestBody.name);
   }
   // moving at the end
   @Get('{userId}')

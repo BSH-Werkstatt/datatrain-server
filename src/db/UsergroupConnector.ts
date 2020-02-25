@@ -1,6 +1,6 @@
 import { DatabaseConnector } from './DatabaseConnector';
 import { ObjectId } from 'mongodb';
-import { UserGroup } from '../models/usergroup';
+import { UserGroup, CreateUserGroupRequest } from '../models/usergroup';
 import { DBConfig } from './dbconfig';
 
 export class UserGroupConnector extends DatabaseConnector {
@@ -43,6 +43,25 @@ export class UserGroupConnector extends DatabaseConnector {
         })
         .catch(err => {
           console.log(`Errpr while finding the userGroup with err ${err}`);
+        });
+    });
+  }
+  /**
+   * Returns the user group with the given user group
+   * @param userGroup usergroup entered by the user
+   */
+  saveUserGroup(userGroup: string): Promise<boolean> {
+    // @TODO: add vaidation if group is akready in db
+    return new Promise((resolve, reject) => {
+      this.insertOne(this.collection, { name: userGroup })
+        .then(res => {
+          if (res) {
+            resolve(true);
+          }
+        })
+        .catch(err => {
+          console.log(`error occure while inserting userGroup err : ${err}`);
+          reject(false);
         });
     });
   }
