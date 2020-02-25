@@ -31,6 +31,11 @@ export class UsersController extends Controller {
   }
   @Post('groups')
   public async saveUserGroup(@Body() requestBody: any): Promise<boolean> {
+    if (!requestBody.name) {
+      return await new Promise((resolve, reject) => {
+        reject('missing field');
+      });
+    }
     return await new UserService().saveUserGroup(requestBody.name);
   }
   // moving at the end
