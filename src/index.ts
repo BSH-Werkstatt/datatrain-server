@@ -12,6 +12,10 @@ import jwt from 'jsonwebtoken';
 import { RegisterRoutes } from './routes';
 import { ImagesController } from './controller/ImagesController';
 import { UserService } from './services/UserService';
+// @TODO: add typescript support as well
+const passport = require('passport');
+const { BasicStrategy } = require('@natlibfi/passport-atlassian-crowd');
+const session = require('express-session');
 import { User } from './models/user';
 import { CodeStarNotifications } from 'aws-sdk';
 import { preProcessFile, isNewExpression } from 'typescript';
@@ -25,7 +29,49 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
   next();
 });
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('/success', (req, res) => {
+  res.send(`success`);
+});
+app.get('/error', (req, res) => res.send('error logging in'));
 app.use(bodyParser.urlencoded({ extended: false }));
+passport.serializeUser((user: any, cb: any) => {
+  console.log(`serializing user with user `);
+  console.log(user.emails[0].value);
+  cb(null, user.emails[0].value);
+});
+
+passport.deserializeUser(async (id: any, cb: any) => {
+  console.log(id);
+  console.log(`frmo deserialize user`);
+  const user = await new UserService().getUserByEmail(id);
+  console.log(`deserializing user id ${id} and user: ${user}`);
+  cb(null, user);
+});
+passport.use(
+  new BasicStrategy({
+    url: process.env.CROWD_URL,
+    appName: process.env.CROWD_APP,
+    appPassword: process.env.CROWD_PASS,
+    fetchGroupMembership: true
+  })
+);
+app.post(
+  '/login',
+  passport.authenticate('atlassian-crowd-basic', { failureRedirect: '/error', session: true }),
+  (req, res) => {
+    res.redirect('/success');
+  }
+);
+app.use((req, res, next) => {
+  if (req.user) {
+    next();
+  }
+  res.send(`please login`);
+});
+app.get('/logout');
 app.get('/images/:campaignId/:imageId.jpg', (req, res) => {
   if (req.query.userToken) {
     UserService.validateUserToken(req.query.userToken).then(valid => {
