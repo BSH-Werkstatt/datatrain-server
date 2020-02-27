@@ -48,4 +48,5 @@ export interface CreateUserRequest {
   email: string;
   name: string;
   userType?: string;
+  groups?: string[];
 }

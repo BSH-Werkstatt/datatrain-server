@@ -12,7 +12,7 @@ export class Campaign {
   image: string;
   trainingInProgress?: boolean;
   currentTrainingId?: string;
-
+  groups?: string[];
   constructor(
     id: string,
     ownerId: string,
@@ -23,7 +23,8 @@ export class Campaign {
     taxonomy: string[],
     image: string,
     trainingInProgress?: boolean,
-    currentTrainingId?: string
+    currentTrainingId?: string,
+    groups?: string[]
   ) {
     this.id = id;
     this.ownerId = ownerId;
@@ -33,7 +34,7 @@ export class Campaign {
     this.description = description;
     this.taxonomy = taxonomy;
     this.image = image;
-
+    this.groups = groups ? groups : ['ml-users'];
     if (trainingInProgress) {
       this.trainingInProgress = trainingInProgress;
     }
@@ -54,7 +55,8 @@ export class Campaign {
       object.taxonomy,
       object.image,
       object.trainingInProgress ? object.trainingInProgress.toString() : false,
-      object.currentTrainingId ? object.currentTrainingId.toString() : null
+      object.currentTrainingId ? object.currentTrainingId.toString() : null,
+      object.groups ? object.groups : ['ml-users']
     );
   }
 }
@@ -78,6 +80,7 @@ export interface CampaignCreationRequest {
   taxonomy: string[];
   image: string;
   ownerId?: string;
+  group?: string[];
 }
 
 export interface CampaignUpdateRequest {
