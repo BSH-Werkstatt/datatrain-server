@@ -16,6 +16,7 @@ import { UserService } from './services/UserService';
 const passport = require('passport');
 const { BasicStrategy } = require('@natlibfi/passport-atlassian-crowd');
 const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 import { User } from './models/user';
 import { CodeStarNotifications } from 'aws-sdk';
 import { preProcessFile, isNewExpression } from 'typescript';
@@ -35,11 +36,12 @@ app.use(
     secret: 'process.env.COOKIE_SECRET',
     resave: false,
     saveUninitialized: false,
-    cookie: {}
-    // store: new MongoStore({
-    //     mongooseConnection: mongoose.connection,
-    //     ttl: 90 * 24 * 60 * 60 // Hold Session for 90 Days
-    //  })
+    cookie: {},
+    store: new MongoStore({
+      // tslint:disable-next-line:max-line-length
+      url: `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:27017/${process.env.DB_DATABASE}`,
+      ttl: 90 * 24 * 60 * 60 // Hold Session for 90 Days
+    })
   })
 );
 app.use(passport.initialize());
