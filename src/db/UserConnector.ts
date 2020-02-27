@@ -94,7 +94,8 @@ export class UserConnector extends DatabaseConnector {
     const self = {
       email: user.email,
       name: user.name,
-      userType: user.userType ? user.userType : USER_TYPES.ANNOTATOR
+      userType: user.userType ? user.userType : USER_TYPES.ANNOTATOR,
+      group: user.group
     };
 
     if (user.id) {

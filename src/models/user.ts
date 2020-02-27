@@ -16,7 +16,7 @@ export class User {
     this.id = id;
     this.email = email;
     this.name = name;
-    this.group = group ? group : ['ml-users'];
+    this.group = group ? group : ['bshintranetidm-users'];
     this.userType = userType ? userType : USER_TYPES.ANNOTATOR;
   }
 
@@ -26,7 +26,7 @@ export class User {
       object.email,
       object.name,
       object.userType ? object.userType : USER_TYPES.ANNOTATOR,
-      object.group ? object.group : ['ml-users']
+      object.group ? object.group : ['bshintranetidm-users']
     );
   }
 

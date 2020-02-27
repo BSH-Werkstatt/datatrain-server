@@ -625,4 +625,23 @@ export class CampaignService {
       });
     });
   }
+  /**
+   * insert crowd groups to the user
+   * @param campaignId is of the current campaign
+   */
+  // @TODO: perform error handeling not going to catch block fix*
+  addCrowdGroup(campaignId: string, groupName: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      try {
+        CampaignConnector.getInstance(async (db: CampaignConnector) => {
+          const campaign: any = await db.get(campaignId);
+          campaign.groups.push(groupName);
+          db.save(campaign);
+        });
+        resolve('crowd grp added');
+      } catch (error) {
+        resolve('unable to add crowd group 500');
+      }
+    });
+  }
 }

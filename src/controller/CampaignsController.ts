@@ -91,4 +91,13 @@ export class CampaignsController extends Controller {
   public async getCampaignImage(campaignId: string): Promise<string> {
     return await new CampaignService().getCampaignImage(campaignId);
   }
+  @Post('/addCrowdGroup/{campaignId}')
+  public async addCrowdGroup(campaignId: string, @Body() requestBody: any) {
+    if (!requestBody.groupName) {
+      return await new Promise((resolve, reject) => {
+        reject({ message: 'missing fields' });
+      });
+    }
+    return await new CampaignService().addCrowdGroup(campaignId, requestBody.groupName);
+  }
 }
