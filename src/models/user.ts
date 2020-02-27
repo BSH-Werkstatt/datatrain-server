@@ -11,12 +11,12 @@ export class User {
   email: string;
   name: string;
   userType?: string;
-
-  constructor(id: string, email: string, name: string, userType?: string) {
+  group: string[];
+  constructor(id: string, email: string, name: string, userType?: string, group?: string[]) {
     this.id = id;
     this.email = email;
     this.name = name;
-
+    this.group = group ? group : ['ml-users'];
     this.userType = userType ? userType : USER_TYPES.ANNOTATOR;
   }
 
@@ -25,7 +25,8 @@ export class User {
       object._id ? object._id.toString() : object.id,
       object.email,
       object.name,
-      object.userType ? object.userType : USER_TYPES.ANNOTATOR
+      object.userType ? object.userType : USER_TYPES.ANNOTATOR,
+      object.group ? object.group : ['ml-users']
     );
   }
 
