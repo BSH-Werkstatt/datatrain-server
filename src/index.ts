@@ -29,6 +29,19 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
   next();
 });
+app.use(
+  session({
+    name: 'name',
+    secret: 'process.env.COOKIE_SECRET',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {}
+    // store: new MongoStore({
+    //     mongooseConnection: mongoose.connection,
+    //     ttl: 90 * 24 * 60 * 60 // Hold Session for 90 Days
+    //  })
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -62,16 +75,19 @@ app.post(
   '/login',
   passport.authenticate('atlassian-crowd-basic', { failureRedirect: '/error', session: true }),
   (req, res) => {
-    res.redirect('/success');
+    res.send(req.user);
   }
 );
 app.use((req, res, next) => {
-  if (req.user) {
-    next();
+  if (req.isAuthenticated()) {
+    return next();
   }
   res.send(`please login`);
 });
-app.get('/logout');
+app.get('/logout', (req, res, next) => {
+  req.logout();
+  res.send(`logged out`);
+});
 app.get('/images/:campaignId/:imageId.jpg', (req, res) => {
   if (req.query.userToken) {
     UserService.validateUserToken(req.query.userToken).then(valid => {
