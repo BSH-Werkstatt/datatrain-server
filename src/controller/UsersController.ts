@@ -16,15 +16,6 @@ export class UsersController extends Controller {
   public async createUser(@Body() request: CreateUserRequest): Promise<User> {
     return await new UserService().createUser(request);
   }
-  @Post('/login')
-  public async loginUser(@Body() requestBody: any): Promise<any> {
-    if (!requestBody.username || !requestBody.password) {
-      return new Promise((resolve, reject) => {
-        reject('missing field');
-      });
-    }
-    return await new UserService().loginUser(requestBody.username, requestBody.password);
-  }
   @Get('groups/{userGroup}')
   public async getUserGroup(userGroup: string): Promise<UserGroup[]> {
     return await new UserService().getUserGroup(userGroup);

@@ -32,6 +32,25 @@ export class UserService {
       }
     });
   }
+  static getUserAssociatedGroup(userEmail: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      try {
+        if (userEmail) {
+          UserConnector.getInstance((db: UserConnector) => {
+            db.getByEmail(userEmail)
+              .then(result => resolve(result.group))
+              .catch(err => reject(err));
+          });
+        } else {
+          console.log(userEmail);
+          reject('invalid userEmail');
+        }
+      } catch (error) {
+        console.log(error);
+        resolve('Error whle geting user group INTERNAL SERVER');
+      }
+    });
+  }
   /**
    * creates user according to CreateUserRequest
    * @param request CreateUserRequest
@@ -90,19 +109,6 @@ export class UserService {
       });
     });
   }
-  // Login route using crowd
-  // @TODO : Top priority *********Important
-  async loginUser(email: string, password: string): Promise<any> {}
-  protectedService(): Promise<any> {
-    return new Promise((resolve: any, reject: any) => {
-      const flag = true;
-      if (flag) {
-        resolve('got it');
-      } else {
-        reject('you cant reach here');
-      }
-    });
-  }
   getUserGroup(userGroup: string): Promise<any> {
     return new Promise((resolve, reject) => {
       UserGroupConnector.getInstance((db: UserGroupConnector) => {
@@ -152,6 +158,10 @@ export class UserService {
       }
     });
   }
+  /**
+   * insert crowd groups to the user
+   * @param userId is of the current campaign
+   */
   removeCrowdGroup(userId: string, groupName: string): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
