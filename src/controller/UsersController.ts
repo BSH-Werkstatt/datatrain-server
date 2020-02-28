@@ -38,6 +38,24 @@ export class UsersController extends Controller {
     }
     return await new UserService().saveUserGroup(requestBody.name);
   }
+  @Post('/addCrowdGroup/{campaignId}')
+  public async addCrowdGroup(campaignId: string, @Body() requestBody: any) {
+    if (!requestBody.groupName) {
+      return await new Promise((resolve, reject) => {
+        reject({ message: 'missing fields' });
+      });
+    }
+    return await new UserService().addCrowdGroup(campaignId, requestBody.groupName);
+  }
+  @Post('/removeCrowdGroup/{campaignId}')
+  public async removeCrowdGroup(campaignId: string, @Body() requestBody: any) {
+    if (!requestBody.groupName) {
+      return await new Promise((resolve, reject) => {
+        reject({ message: 'missing fields' });
+      });
+    }
+    return await new UserService().removeCrowdGroup(campaignId, requestBody.groupName);
+  }
   // moving at the end
   @Get('{userId}')
   public async getUserById(userId: string): Promise<User> {
