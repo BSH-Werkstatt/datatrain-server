@@ -100,4 +100,13 @@ export class CampaignsController extends Controller {
     }
     return await new CampaignService().addCrowdGroup(campaignId, requestBody.groupName);
   }
+  @Post('/removeCrowdGroup/{campaignId}')
+  public async removeCrowdGroup(campaignId: string, @Body() requestBody: any) {
+    if (!requestBody.groupName) {
+      return await new Promise((resolve, reject) => {
+        reject({ message: 'missing fields' });
+      });
+    }
+    return await new CampaignService().removeCrowdGroup(campaignId, requestBody.groupName);
+  }
 }

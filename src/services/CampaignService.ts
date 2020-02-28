@@ -640,7 +640,24 @@ export class CampaignService {
         });
         resolve('crowd grp added');
       } catch (error) {
-        resolve('unable to add crowd group 500');
+        reject('unable to add crowd group 500');
+      }
+    });
+  }
+  removeCrowdGroup(campaignId: string, groupName: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        CampaignConnector.getInstance(async (db: CampaignConnector) => {
+          const campaign: Campaign = await db.get(campaignId);
+          if (campaign.groups.includes(groupName)) {
+            campaign.groups = campaign.groups.filter(val => val !== groupName);
+            resolve(db.save(campaign));
+          } else {
+            reject('Group name is not valid');
+          }
+        });
+      } catch (error) {
+        reject('Unexprected error 500 while removeing the user');
       }
     });
   }
