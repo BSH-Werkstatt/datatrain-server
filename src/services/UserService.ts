@@ -32,7 +32,7 @@ export class UserService {
       }
     });
   }
-  static getUserAssociatedGroup(userEmail: string): Promise<any> {
+  static getUserAssociatedGroup(userEmail: any): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       try {
         if (userEmail) {

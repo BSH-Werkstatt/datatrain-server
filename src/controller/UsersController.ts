@@ -5,6 +5,8 @@ import { UserGroup, CreateUserGroupRequest } from '../models/usergroup';
 import { rejects } from 'assert';
 import { json } from 'body-parser';
 import * as express from 'express';
+import { Interface } from 'readline';
+import { idText } from 'typescript';
 @Route('users')
 export class UsersController extends Controller {
   @Get('byEmail/{email}')
@@ -50,8 +52,8 @@ export class UsersController extends Controller {
   // TESTING route for any new feature please remove it in porduction
   @Get('Test')
   public async testFeature(@Request() req: express.Request) {
-    console.log(req.user);
-    console.log('this is test route handeler please know ');
+    const user: any = req.user;
+    console.log(await UserService.getUserAssociatedGroup(user.email));
   }
   // moving at the end
   @Get('{userId}')
