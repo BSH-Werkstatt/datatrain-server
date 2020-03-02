@@ -44,10 +44,8 @@ export class UserService {
                   resolve({ role: 'ADMIN', result });
                 } else if (roles.includes(process.env.CAMPAIGN_MANAGER)) {
                   resolve({ role: 'CAMPAIGN_MANAGER', result });
-                } else if (roles.includes(process.env.ANNOTATOR)) {
-                  resolve({ role: 'ANNOTATOR', result });
                 } else {
-                  resolve({ error: 'ROLE_NOT_FOUND' });
+                  resolve({ role: 'ANNOTATOR', result });
                 }
               })
               .catch(err => reject(err));

@@ -48,7 +48,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/success', (req, res) => {
-  res.send(`success`);
+  const user: any = req.user;
+  res.redirect(`/users/${user.email}`);
 });
 app.get('/error', (req, res) => res.send('error logging in'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -79,7 +80,8 @@ app.post(
   '/login',
   passport.authenticate('atlassian-crowd-basic', { failureRedirect: '/error', session: true }),
   (req, res) => {
-    res.send(req.user);
+    // res.send(req.user);
+    res.redirect(200, '/success');
   }
 );
 app.use((req, res, next) => {
