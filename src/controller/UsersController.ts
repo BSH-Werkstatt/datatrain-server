@@ -4,7 +4,7 @@ import { UserService } from '../services/UserService';
 import { UserGroup, CreateUserGroupRequest } from '../models/usergroup';
 import { rejects } from 'assert';
 import { json } from 'body-parser';
-
+import * as express from 'express';
 @Route('users')
 export class UsersController extends Controller {
   @Get('byEmail/{email}')
@@ -46,6 +46,12 @@ export class UsersController extends Controller {
       });
     }
     return await new UserService().removeCrowdGroup(campaignId, requestBody.groupName);
+  }
+  // TESTING route for any new feature please remove it in porduction
+  @Get('Test')
+  public async testFeature(@Request() req: express.Request) {
+    console.log(req.user);
+    console.log('this is test route handeler please know ');
   }
   // moving at the end
   @Get('{userId}')

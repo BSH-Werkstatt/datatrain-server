@@ -61,8 +61,10 @@ passport.serializeUser((user: any, cb: any) => {
 passport.deserializeUser(async (id: any, cb: any) => {
   console.log(id);
   console.log(`frmo deserialize user`);
+  id = id.toLowerCase();
   const user = await new UserService().getUserByEmail(id);
-  console.log(`deserializing user id ${id} and user: ${user}`);
+  console.log(`deserializing user id ${user.id} and user: `);
+  console.log(user);
   cb(null, user);
 });
 passport.use(

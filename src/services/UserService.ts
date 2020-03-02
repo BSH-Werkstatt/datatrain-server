@@ -38,7 +38,18 @@ export class UserService {
         if (userEmail) {
           UserConnector.getInstance((db: UserConnector) => {
             db.getByEmail(userEmail)
-              .then(result => resolve(result.group))
+              .then(result => {
+                const roles = result.group;
+                if (roles.includes(process.env.ADMIN)) {
+                  resolve({ role: 'ADMIN', result });
+                } else if (roles.includes(process.env.CAMPAIGN_MANAGER)) {
+                  resolve({ role: 'CAMPAIGN_MANAGER', result });
+                } else if (roles.includes(process.env.ANNOTATOR)) {
+                  resolve({ role: 'ANNOTATOR', result });
+                } else {
+                  resolve({ error: 'ROLE_NOT_FOUND' });
+                }
+              })
               .catch(err => reject(err));
           });
         } else {
