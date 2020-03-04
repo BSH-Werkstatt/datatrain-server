@@ -1,6 +1,7 @@
 import { CreateUserRequest, User } from '../models/user';
 import { UserConnector } from '../db/UserConnector';
 import { UserGroupConnector } from '../db/UsergroupConnector';
+import { Helper } from '../helper';
 import { CreateUserGroupRequest } from '../models/usergroup';
 import { getTokenSourceMapRange } from 'typescript';
 export class UserService {
@@ -9,11 +10,25 @@ export class UserService {
    * @param userToken userToken from the request
    */
   static getUserIdFromToken(userToken: string): string {
+    Helper.getCallStack(this);
     // right now we are just passing the user ID as string as the token
     return userToken;
   }
-
+  static getUserIdFromUserEmail(userEmail: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        UserConnector.getInstance((db: UserConnector) => {
+          db.getByEmail(userEmail)
+            .then(result => resolve(result.id))
+            .catch(err => reject(err));
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
   static validateUserToken(userToken: string): Promise<boolean> {
+    Helper.getCallStack(this);
     return new Promise<boolean>((resolve, reject) => {
       if (userToken) {
         const userId = UserService.getUserIdFromToken(userToken);
@@ -32,7 +47,22 @@ export class UserService {
       }
     });
   }
-  static getUserAssociatedGroup(userEmail: any): Promise<any> {
+  static getUserAssociatedGroup(userEmail: string): Promise<any> {
+    Helper.getCallStack(this);
+    return new Promise<any>((resolve, reject) => {
+      try {
+        UserConnector.getInstance((db: UserConnector) => {
+          db.getByEmail(userEmail)
+            .then(result => resolve(result.group))
+            .catch(err => reject(err));
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  static getUserAssociatedRole(userEmail: string): Promise<any> {
+    Helper.getCallStack(this);
     return new Promise<any>((resolve, reject) => {
       try {
         if (userEmail) {
@@ -65,6 +95,7 @@ export class UserService {
    * @param request CreateUserRequest
    */
   createUser(request: CreateUserRequest): Promise<User> {
+    Helper.getCallStack(this);
     // TODO: check if email exists
     return new Promise<User>((resolve, reject) => {
       console.log(request, request.email);
@@ -82,6 +113,7 @@ export class UserService {
    * @param email unique email of the user
    */
   getUserByEmail(email: string): Promise<User> {
+    Helper.getCallStack(this);
     return new Promise<User>((resolve, reject) => {
       UserConnector.getInstance((db: UserConnector) => {
         db.getByEmail(email).then(result => {
@@ -102,6 +134,7 @@ export class UserService {
    * @param userId unique userId of the user
    */
   getUserById(userId: string): Promise<User> {
+    Helper.getCallStack(this);
     return new Promise<User>((resolve, reject) => {
       UserConnector.getInstance((db: UserConnector) => {
         db.get(userId)
@@ -119,6 +152,7 @@ export class UserService {
     });
   }
   getUserGroup(userGroup: string): Promise<any> {
+    Helper.getCallStack(this);
     return new Promise((resolve, reject) => {
       UserGroupConnector.getInstance((db: UserGroupConnector) => {
         db.getUserGroupByName(userGroup)
@@ -136,6 +170,7 @@ export class UserService {
     });
   }
   saveUserGroup(userGroup: string): Promise<boolean> {
+    Helper.getCallStack(this);
     return new Promise<boolean>((resolve, reject) => {
       UserGroupConnector.getInstance((db: UserGroupConnector) => {
         db.saveUserGroup(userGroup)
@@ -155,6 +190,7 @@ export class UserService {
    * @param userId is of the current campaign
    */
   addCrowdGroup(userId: string, groupName: string): Promise<any> {
+    Helper.getCallStack(this);
     return new Promise<any>((resolve, reject) => {
       try {
         UserConnector.getInstance(async (db: UserConnector) => {
@@ -172,6 +208,7 @@ export class UserService {
    * @param userId is of the current campaign
    */
   removeCrowdGroup(userId: string, groupName: string): Promise<any> {
+    Helper.getCallStack(this);
     return new Promise((resolve, reject) => {
       try {
         UserConnector.getInstance(async (db: UserConnector) => {

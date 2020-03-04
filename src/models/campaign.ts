@@ -69,7 +69,7 @@ export enum CampaignType {
 }
 
 export interface CampaignCreationRequest {
-  userToken: string;
+  userToken?: string;
   /**
    * @isInt type
    */
@@ -84,6 +84,6 @@ export interface CampaignCreationRequest {
 }
 
 export interface CampaignUpdateRequest {
-  userToken: string;
+  userToken?: string;
   campaign: Campaign;
 }

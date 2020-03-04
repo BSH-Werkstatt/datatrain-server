@@ -2,12 +2,15 @@ import { Get, Route, Post, Put, Controller, Request, Body, SuccessResponse, Resp
 import express from 'express';
 
 import { ImageData } from '../models/data';
-import { Campaign, CampaignCreationRequest, CampaignUpdateRequest } from '../models/campaign';
+import { Campaign, CampaignCreationRequest, CampaignUpdateRequest, CampaignType } from '../models/campaign';
 import { CampaignService } from '../services/CampaignService';
 import { AnnotationCreationRequest, Annotation } from '../models/annotation';
 import { Leaderboard, LeaderboardCreationRequest, LeaderboardUpdateRequest } from '../models/leaderboard';
 import { PredictionResult } from '../models/prediction';
 import { Initializer } from '../db/Initializer';
+import { UserService } from '../services/UserService';
+import { Helper } from '../helper';
+import { isJsxFragment } from 'typescript';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
@@ -28,24 +31,164 @@ export class CampaignsController extends Controller {
     });
   }
   @Get('{campaignId}')
-  public async getCampaign(campaignId: string): Promise<Campaign> {
-    return await new CampaignService().get(campaignId);
+  public async getCampaign(campaignId: string, @Request() request: express.Request): Promise<Campaign> {
+    const user: any = request.user;
+    const campaign: any = await new CampaignService().get(campaignId);
+    const role: any = await UserService.getUserAssociatedRole(user.email);
+    if (role.role === 'ADMIN') {
+      return campaign;
+    } else if (role.role === 'CAMPAIGN_MANAGER' || role.role === 'ANNOTATOR') {
+      // chekck he is able to view or now
+      const validGroups: string[] = campaign.groups.filter((grp: string) => user.group.includes(grp));
+      if (user.id === campaign.ownerId || validGroups.length > 0) {
+        return campaign;
+      } else {
+        return await new Campaign(
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          campaign.type,
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          ['UNAUTHORIZE'],
+          'UNAUTHORIZE'
+        );
+      }
+    } else {
+      return await new Campaign(
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        campaign.type,
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        ['UNAUTHORIZE'],
+        'UNAUTHORIZE'
+      );
+    }
   }
   @Post('')
-  public async postCampaign(@Body() request: CampaignCreationRequest): Promise<Campaign> {
-    return await new CampaignService().post(request);
+  public async postCampaign(@Body() request: any, @Request() req: express.Request): Promise<Campaign> {
+    // only admin can create a campaign
+    const user: any = req.user;
+    const role: any = await UserService.getUserAssociatedRole(user.email);
+    // get the id of user from username
+    const ownerId = await UserService.getUserIdFromUserEmail(user.email);
+    console.log(`inside campaign controller`);
+    console.log(role);
+    const postData: CampaignCreationRequest = await Campaign.fromObject(request);
+    postData.ownerId = ownerId;
+    if (role.role === 'ADMIN') {
+      return await new CampaignService().post(postData);
+    } else {
+      return new Campaign(
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        0,
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        ['UNAUTHORIZE'],
+        'UNAUTHORIZE'
+      );
+    }
   }
-  @Put('{campaignId}')
-  public async putCampaign(campaignId: string, @Body() request: CampaignUpdateRequest): Promise<Campaign> {
-    return await new CampaignService().put(campaignId, request);
+  @Put('{cId}')
+  public async putCampaign(
+    cId: string,
+    @Body() r: CampaignUpdateRequest,
+    @Request() re: express.Request
+  ): Promise<Campaign> {
+    const user: any = re.user;
+    const campaign: Campaign = await new CampaignService().get(cId);
+    const role: any = await UserService.getUserAssociatedRole(user.id);
+    if (user.id === campaign.ownerId || role.role === 'ADMIN') {
+      return await new CampaignService().put(cId, r);
+    } else {
+      return new Campaign(
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        0,
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        'UNAUTHORIZE',
+        ['UNAUTHORIZE'],
+        'UNAUTHORIZE'
+      );
+    }
   }
   @Get('byURLName/{campaignName}')
-  public async getCampaignByURLName(campaignName: string): Promise<Campaign> {
-    return await new CampaignService().getByURLName(campaignName);
+  public async getCampaignByURLName(campaignName: string, @Request() request: express.Request): Promise<Campaign> {
+    try {
+      const user: any = request.user;
+      const campaign: any = await new CampaignService().getByURLName(campaignName);
+      const role: any = await UserService.getUserAssociatedRole(user.email);
+      if (role.role === 'ADMIN') {
+        return campaign;
+      } else if (role.role === 'CAMPAIGN_MANAGER' || role.role === 'ANNOTATOR') {
+        // chekck he is able to view or now
+        const validGroups: string[] = campaign.groups.filter((grp: string) => user.group.includes(grp));
+        if (user.id === campaign.ownerId || validGroups.length > 0) {
+          return campaign;
+        } else {
+          // tslint:disable-next-line:max-line-length
+          return await new Campaign(
+            'UNAUTHORIZE',
+            'UNAUTHORIZE',
+            campaign.type,
+            'UNAUTHORIZE',
+            'UNAUTHORIZE',
+            'UNAUTHORIZE',
+            ['UNAUTHORIZE'],
+            'UNAUTHORIZE'
+          );
+        }
+      } else {
+        return await new Campaign(
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          campaign.type,
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          ['UNAUTHORIZE'],
+          'UNAUTHORIZE'
+        );
+      }
+    } catch (error) {
+      return await new Campaign(
+        'INTERNAL_SERVER_ERROR_500',
+        'INTERNAL_SERVER_ERROR_500',
+        0,
+        'INTERNAL_SERVER_ERROR_500',
+        'INTERNAL_SERVER_ERROR_500',
+        'INTERNAL_SERVER_ERROR_500',
+        ['INTERNAL_SERVER_ERROR_500'],
+        'INTERNAL_SERVER_ERROR_500'
+      );
+    }
   }
   @Get('')
-  public async getAllCampaigns(): Promise<Campaign[]> {
-    return await new CampaignService().getAll();
+  public async getAllCampaigns(@Request() req: express.Request): Promise<Campaign[]> {
+    const user: any = req.user;
+    let role: any = await UserService.getUserAssociatedRole(user.id);
+    role = role.role;
+    const allCampaigns: Campaign[] = await new CampaignService().getAll();
+    if (role === 'ADMIN') {
+      return allCampaigns;
+    } else {
+      // show all campaign that is visible to annotator or admin
+      // filter allCampaign based of user groups
+      allCampaigns.forEach((element, idx) => {
+        if (!Helper.isCommonElement(element.groups, user.group)) {
+          // add campaign
+          if (idx) {
+            allCampaigns.splice(idx, 1);
+          }
+        }
+      });
+      return allCampaigns;
+    }
   }
   @Post('{campaignId}/images')
   public async postImage(campaignId: string, @Request() request: express.Request): Promise<ImageData> {

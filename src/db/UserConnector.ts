@@ -12,6 +12,7 @@ export class UserConnector extends DatabaseConnector {
         userConn
           .get(userId)
           .then((user: User) => {
+            console.log(user.userType);
             if (user.userType === USER_TYPES.ADMIN || user.userType === USER_TYPES.CAMPAIGN_OWNER) {
               res(true);
             }

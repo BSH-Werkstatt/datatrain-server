@@ -23,13 +23,15 @@ import { UserConnector } from '../db/UserConnector';
 import { User, USER_TYPES } from '../models/user';
 import { ObjectId } from 'bson';
 import { TrainingService } from './TrainingService';
-
+import { Helper } from '../helper';
+import { rejects } from 'assert';
 export class CampaignService {
   /**
    * Returns the Campaign with the given identifier, if it does not exist, an error will be raised
    * @param id Identifier of the campaign
    */
   get(id: string): Promise<Campaign> {
+    Helper.getCallStack(this);
     const promise = new Promise<Campaign>((resolve, reject) => {
       CampaignConnector.getInstance((db: CampaignConnector) => {
         db.get(id).then(result => {
@@ -52,6 +54,7 @@ export class CampaignService {
    * @param name name of the campaign
    */
   campaignBuildNewURLName(name: string): Promise<string> {
+    Helper.getCallStack(this);
     return new Promise<string>((resolve, reject) => {
       const urlName = name.toLocaleLowerCase().replace(' ', '-');
 
@@ -72,39 +75,57 @@ export class CampaignService {
    * @param request a CampaignCreationRequest object
    */
   post(request: CampaignCreationRequest): Promise<Campaign> {
+    Helper.getCallStack(this);
     console.log('Got POST request to create a campaign');
-
-    return new Promise<Campaign>((resolve, reject) => {
-      const userId = UserService.getUserIdFromToken(request.userToken);
-      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
-
-      hasCapabilityPromise
-        .then((hasCapability: boolean) => {
-          if (hasCapability) {
-            CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
-              request.ownerId = userId;
-
-              this.campaignBuildNewURLName(request.name).then(urlName => {
-                request.urlName = urlName;
-                const campaign = Campaign.fromObject(request);
-
-                campaignConn.save(campaign).then(campaignResult => {
-                  campaign.id = campaignResult.insertedId.toString();
-                  resolve(campaign);
-                  console.log('Campaign ' + campaign.id + ' created.');
-                });
-              });
-            });
-          } else {
-            reject('hasCapability = false');
-          }
-        })
-        .catch(e => {
-          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
-          console.error(reason);
-          reject(reason);
+    try {
+      console.log(request.type);
+      return new Promise<Campaign>((resolve, reject) => {
+        CampaignConnector.getInstance((db: CampaignConnector) => {
+          const campaign = Campaign.fromObject(request);
+          db.save(campaign)
+            .then(campaignResult => {
+              resolve(campaign);
+              // console.log('Campaign ' + campaign.id + ' created.');
+            })
+            .catch(err => reject(err));
         });
-    });
+      });
+    } catch (error) {
+      return error;
+    }
+    /*
+     return new Promise<Campaign>((resolve, reject) => {
+       const userId = UserService.getUserIdFromToken(request.userToken);
+       const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
+ 
+       hasCapabilityPromise
+         .then((hasCapability: boolean) => {
+           if (hasCapability) {
+             CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
+               request.ownerId = userId;
+ 
+               this.campaignBuildNewURLName(request.name).then(urlName => {
+                 request.urlName = urlName;
+                 const campaign = Campaign.fromObject(request);
+ 
+                 campaignConn.save(campaign).then(campaignResult => {
+                   campaign.id = campaignResult.insertedId.toString();
+                   resolve(campaign);
+                   console.log('Campaign ' + campaign.id + ' created.');
+                 });
+               });
+             });
+           } else {
+             reject('hasCapability = false');
+           }
+         })
+         .catch(e => {
+           const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
+           console.error(reason);
+           reject(reason);
+         });
+     });
+     */
   }
 
   /**
@@ -112,6 +133,7 @@ export class CampaignService {
    * @param request a CampaignCreationRequest object
    */
   put(campaignId: string, request: CampaignUpdateRequest): Promise<Campaign> {
+    Helper.getCallStack(this);
     console.log('Got PUT request to update campaign ' + campaignId);
 
     return new Promise<Campaign>((resolve, reject) => {
@@ -145,6 +167,7 @@ export class CampaignService {
    * @param urlName url name of the campaign
    */
   getByURLName(urlName: string): Promise<Campaign> {
+    Helper.getCallStack(this);
     const promise = new Promise<Campaign>((resolve, reject) => {
       CampaignConnector.getInstance((db: CampaignConnector) => {
         db.getByURLName(urlName).then(result => {
@@ -166,6 +189,7 @@ export class CampaignService {
    * Returns all campaigns as an array of Campaign objects
    */
   getAll(): Promise<Campaign[]> {
+    Helper.getCallStack(this);
     const promise = new Promise<Campaign[]>((resolve, reject) => {
       CampaignConnector.getInstance((db: CampaignConnector) => {
         db.getAll().then(result => {
@@ -195,6 +219,7 @@ export class CampaignService {
     doNotAddScore?: boolean,
     makePublic?: boolean
   ): Promise<ImageData> {
+    Helper.getCallStack(this);
     if (!makePublic) {
       makePublic = false;
     }
@@ -300,6 +325,7 @@ export class CampaignService {
    * @param campaignId Identifier of the Campaign from which an image is to be selected
    */
   getRandomImage(campaignId: string): Promise<ImageData> {
+    Helper.getCallStack(this);
     return new Promise<ImageData>((resolve, reject) => {
       ImageConnector.getInstance((db: ImageConnector) => {
         // not the most efficient, but will get the job done before we write something better, TODO
@@ -321,6 +347,7 @@ export class CampaignService {
    * basically a random hex string generator
    */
   getAnnotationId(): string {
+    Helper.getCallStack(this);
     const date = new Date();
     const timestamp = date.getTime();
     let str = timestamp.toString(16);
@@ -340,6 +367,7 @@ export class CampaignService {
    * @param request Express request with the rest of the form data (user etc.)
    */
   uploadAnnotations(campaignId: string, imageId: string, request: AnnotationCreationRequest): Promise<Annotation[]> {
+    Helper.getCallStack(this);
     return new Promise((resolve, reject) => {
       const userId = UserService.getUserIdFromToken(request.userToken);
       const annotations: Annotation[] = [];
@@ -360,6 +388,7 @@ export class CampaignService {
       });
 
       Annotation.saveMany(imageId, annotations, (res: any) => {
+        Helper.getCallStack(this);
         this.addLeaderboardScoreToUser(campaignId, userId, annotations.length);
 
         if (res) {
@@ -376,6 +405,7 @@ export class CampaignService {
    * @param campaignId Identifier of the campaign
    */
   getAllImagesOfCampaign(campaignId: string): Promise<ImageData[]> {
+    Helper.getCallStack(this);
     return new Promise<ImageData[]>((resolve, reject) => {
       ImageConnector.getInstance((db: ImageConnector) => {
         // not the most efficient, but will get the job done before we write something better, TODO
@@ -397,6 +427,7 @@ export class CampaignService {
    * @param campaignId Identifier of the campaign
    */
   getLeaderboard(campaignId: string): Promise<Leaderboard> {
+    Helper.getCallStack(this);
     return new Promise<Leaderboard>((resolve, reject) => {
       LeaderboardConnector.getInstance((db: LeaderboardConnector) => {
         // not the most efficient, but will get the job done before we write something better, TODO
@@ -418,6 +449,7 @@ export class CampaignService {
    * @param request a LeaderboardCreationRequest object
    */
   postLeaderboard(campaignId: string, request: LeaderboardCreationRequest): Promise<Leaderboard> {
+    Helper.getCallStack(this);
     return new Promise<Leaderboard>((resolve, reject) => {
       console.log('Got POST request to create the loaderboard of the campaign ' + campaignId);
 
@@ -456,6 +488,7 @@ export class CampaignService {
    * @param request a LeaderboardUpdateRequest object
    */
   putLeaderboard(campaignId: string, request: LeaderboardUpdateRequest): Promise<Leaderboard> {
+    Helper.getCallStack(this);
     return new Promise<Leaderboard>((resolve, reject) => {
       console.log('Got PUT request to update loaderboard of the campaign ' + campaignId);
 
@@ -491,6 +524,7 @@ export class CampaignService {
    * @param score score to be addded
    */
   addLeaderboardScoreToUser(campaignId: string, userId: string, score: number) {
+    Helper.getCallStack(this);
     LeaderboardConnector.getInstance((db: LeaderboardConnector) => {
       db.get(campaignId)
         .then((res: Leaderboard) => {
@@ -521,6 +555,7 @@ export class CampaignService {
    * @param request request containing image
    */
   requestPrediction(campaignId: string, request: express.Request): Promise<PredictionResult> {
+    Helper.getCallStack(this);
     return new Promise<PredictionResult>((resolve, reject) => {
       const imageName = Math.floor(Math.random() * 1000000000);
 
@@ -560,6 +595,7 @@ export class CampaignService {
   }
 
   async requestPredictionFromMLServer(campaign: Campaign, url: string, folder: string): Promise<PredictionResult> {
+    Helper.getCallStack(this);
     return new Promise<PredictionResult>((resolve, reject) => {
       const request = require('request');
       try {
@@ -600,6 +636,7 @@ export class CampaignService {
    * @param request request with the image
    */
   uploadCampaignImage(campaignId: string, request: express.Request): Promise<string> {
+    Helper.getCallStack(this);
     return new Promise<string>((resolve, reject) => {
       this.uploadImage(campaignId, request, false, true).then((imageData: ImageData) => {
         const url = imageData.url;
@@ -619,6 +656,7 @@ export class CampaignService {
    * @param campaignId id of the campaign
    */
   getCampaignImage(campaignId: string): Promise<string> {
+    Helper.getCallStack(this);
     return new Promise<string>((resolve, reject) => {
       this.get(campaignId).then((campaign: Campaign) => {
         resolve(campaign.image);
@@ -630,6 +668,7 @@ export class CampaignService {
    * @param campaignId is of the current campaign
    */
   addCrowdGroup(campaignId: string, groupName: string): Promise<any> {
+    Helper.getCallStack(this);
     return new Promise<any>((resolve, reject) => {
       try {
         CampaignConnector.getInstance(async (db: CampaignConnector) => {
@@ -643,6 +682,7 @@ export class CampaignService {
     });
   }
   removeCrowdGroup(campaignId: string, groupName: string): Promise<any> {
+    Helper.getCallStack(this);
     return new Promise((resolve, reject) => {
       try {
         CampaignConnector.getInstance(async (db: CampaignConnector) => {
