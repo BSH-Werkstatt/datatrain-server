@@ -171,7 +171,7 @@ export class CampaignsController extends Controller {
   @Get('')
   public async getAllCampaigns(@Request() req: express.Request): Promise<Campaign[]> {
     const user: any = req.user;
-    let role: any = await UserService.getUserAssociatedRole(user.id);
+    let role: any = await UserService.getUserAssociatedRole(user.email);
     role = role.role;
     const allCampaigns: Campaign[] = await new CampaignService().getAll();
     if (role === 'ADMIN') {
@@ -179,15 +179,17 @@ export class CampaignsController extends Controller {
     } else {
       // show all campaign that is visible to annotator or admin
       // filter allCampaign based of user groups
+      const filteredCampaign: Campaign[] = [];
       allCampaigns.forEach((element, idx) => {
-        if (!Helper.isCommonElement(element.groups, user.group)) {
+        if (Helper.isCommonElement(element.groups, user.group)) {
           // add campaign
           if (idx) {
-            allCampaigns.splice(idx, 1);
+            const removedEle = allCampaigns.splice(idx, 1);
+            filteredCampaign.push(removedEle[0]);
           }
         }
       });
-      return allCampaigns;
+      return filteredCampaign;
     }
   }
   @Post('{campaignId}/images')
