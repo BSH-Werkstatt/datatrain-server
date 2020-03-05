@@ -93,39 +93,6 @@ export class CampaignService {
     } catch (error) {
       return error;
     }
-    /*
-     return new Promise<Campaign>((resolve, reject) => {
-       const userId = UserService.getUserIdFromToken(request.userToken);
-       const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
- 
-       hasCapabilityPromise
-         .then((hasCapability: boolean) => {
-           if (hasCapability) {
-             CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
-               request.ownerId = userId;
- 
-               this.campaignBuildNewURLName(request.name).then(urlName => {
-                 request.urlName = urlName;
-                 const campaign = Campaign.fromObject(request);
- 
-                 campaignConn.save(campaign).then(campaignResult => {
-                   campaign.id = campaignResult.insertedId.toString();
-                   resolve(campaign);
-                   console.log('Campaign ' + campaign.id + ' created.');
-                 });
-               });
-             });
-           } else {
-             reject('hasCapability = false');
-           }
-         })
-         .catch(e => {
-           const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
-           console.error(reason);
-           reject(reason);
-         });
-     });
-     */
   }
 
   /**

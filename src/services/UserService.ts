@@ -4,6 +4,7 @@ import { UserGroupConnector } from '../db/UsergroupConnector';
 import { Helper } from '../helper';
 import { CreateUserGroupRequest } from '../models/usergroup';
 import { getTokenSourceMapRange } from 'typescript';
+import { CostExplorer } from 'aws-sdk';
 export class UserService {
   /**
    * Returns the ID of the user to whom the passed token belongs to.
@@ -16,10 +17,17 @@ export class UserService {
   }
   static getUserIdFromUserEmail(userEmail: string): Promise<any> {
     return new Promise((resolve, reject) => {
+      if (!userEmail) {
+        reject('Email not provided');
+      }
       try {
         UserConnector.getInstance((db: UserConnector) => {
+          console.log(userEmail);
           db.getByEmail(userEmail)
-            .then(result => resolve(result.id))
+            .then(result => {
+              console.log(result);
+              resolve(result.id);
+            })
             .catch(err => reject(err));
         });
       } catch (error) {

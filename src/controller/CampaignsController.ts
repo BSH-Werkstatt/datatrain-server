@@ -11,6 +11,7 @@ import { Initializer } from '../db/Initializer';
 import { UserService } from '../services/UserService';
 import { Helper } from '../helper';
 import { isJsxFragment } from 'typescript';
+import { createSocket } from 'dgram';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
@@ -71,11 +72,10 @@ export class CampaignsController extends Controller {
   public async postCampaign(@Body() request: any, @Request() req: express.Request): Promise<Campaign> {
     // only admin can create a campaign
     const user: any = req.user;
+
     const role: any = await UserService.getUserAssociatedRole(user.email);
     // get the id of user from username
-    const ownerId = await UserService.getUserIdFromUserEmail(user.email);
-    console.log(`inside campaign controller`);
-    console.log(role);
+    const ownerId = await UserService.getUserIdFromUserEmail(request.ownerEmail);
     const postData: CampaignCreationRequest = await Campaign.fromObject(request);
     postData.ownerId = ownerId;
     if (role.role === 'ADMIN') {
