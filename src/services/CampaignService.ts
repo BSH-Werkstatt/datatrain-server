@@ -25,6 +25,7 @@ import { ObjectId } from 'bson';
 import { TrainingService } from './TrainingService';
 import { Helper } from '../helper';
 import { rejects } from 'assert';
+import { constants } from 'buffer';
 export class CampaignService {
   /**
    * Returns the Campaign with the given identifier, if it does not exist, an error will be raised
@@ -99,32 +100,20 @@ export class CampaignService {
    * updates a campaign according to a CampaignCreationRequest
    * @param request a CampaignCreationRequest object
    */
-  put(campaignId: string, request: CampaignUpdateRequest): Promise<Campaign> {
+  put(campaignId: string, request: any): any {
     Helper.getCallStack(this);
-    console.log('Got PUT request to update campaign ' + campaignId);
-
-    return new Promise<Campaign>((resolve, reject) => {
-      const userId = UserService.getUserIdFromToken(request.userToken);
-      const hasCapabilityPromise = UserConnector.userHasCapabilityForCampaigns(userId);
-
-      hasCapabilityPromise
-        .then((hasCapability: boolean) => {
-          if (hasCapability) {
-            CampaignConnector.getInstance((campaignConn: CampaignConnector) => {
-              request.campaign.id = campaignId;
-              const campaign = campaignConn.save(request.campaign);
-
-              console.log('Campaign ' + campaignId + ' updated.');
-              resolve(campaign);
-            });
-          } else {
-            reject('hasCapability = false');
-          }
+    CampaignConnector.getInstance((db: CampaignConnector) => {
+      request.id = campaignId;
+      console.log(request);
+      db.save(request)
+        .then(result => {
+          console.log(`successfully updated the campaign`);
+          return result;
         })
-        .catch(e => {
-          const reason = 'User ' + userId + ' does not have the capability to create a campaign: ' + e;
-          console.error(reason);
-          reject(reason);
+        .catch(err => {
+          console.log(`error while updating campaign`);
+          console.log(err);
+          return err;
         });
     });
   }

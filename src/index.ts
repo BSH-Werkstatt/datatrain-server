@@ -76,7 +76,7 @@ passport.use(
     fetchGroupMembership: true
   })
 );
-app.post(
+app.get(
   '/login',
   passport.authenticate('atlassian-crowd-basic', { failureRedirect: '/error', session: true }),
   (req, res) => {

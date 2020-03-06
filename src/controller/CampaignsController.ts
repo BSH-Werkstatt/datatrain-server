@@ -12,6 +12,7 @@ import { UserService } from '../services/UserService';
 import { Helper } from '../helper';
 import { isJsxFragment } from 'typescript';
 import { createSocket } from 'dgram';
+import { CodeStarNotifications } from 'aws-sdk';
 
 @Route('campaigns')
 export class CampaignsController extends Controller {
@@ -36,6 +37,7 @@ export class CampaignsController extends Controller {
     const user: any = request.user;
     const campaign: any = await new CampaignService().get(campaignId);
     const role: any = await UserService.getUserAssociatedRole(user.email);
+    console.log(role);
     if (role.role === 'ADMIN') {
       return campaign;
     } else if (role.role === 'CAMPAIGN_MANAGER' || role.role === 'ANNOTATOR') {
@@ -72,9 +74,10 @@ export class CampaignsController extends Controller {
   public async postCampaign(@Body() request: any, @Request() req: express.Request): Promise<Campaign> {
     // only admin can create a campaign
     const user: any = req.user;
-
+    console.log(user);
     const role: any = await UserService.getUserAssociatedRole(user.email);
     // get the id of user from username
+    console.log(role);
     const ownerId = await UserService.getUserIdFromUserEmail(request.ownerEmail);
     const postData: CampaignCreationRequest = await Campaign.fromObject(request);
     postData.ownerId = ownerId;
@@ -94,17 +97,37 @@ export class CampaignsController extends Controller {
     }
   }
   @Put('{cId}')
-  public async putCampaign(
-    cId: string,
-    @Body() r: CampaignUpdateRequest,
-    @Request() re: express.Request
-  ): Promise<Campaign> {
-    const user: any = re.user;
-    const campaign: Campaign = await new CampaignService().get(cId);
-    const role: any = await UserService.getUserAssociatedRole(user.id);
-    if (user.id === campaign.ownerId || role.role === 'ADMIN') {
-      return await new CampaignService().put(cId, r);
-    } else {
+  public async putCampaign(cId: string, @Body() r: any, @Request() re: express.Request): Promise<Campaign> {
+    try {
+      console.log(re.user);
+      const user: any = re.user;
+      // get role
+      const role = await UserService.getUserAssociatedRole(user.email);
+      // get campaign
+      const campaign = await new CampaignService().get(cId);
+      const updatedReq = await Campaign.fromObject(r);
+      // for (const key in updatedReq) {
+      //   if (updatedReq.hasOwnProperty(key)) {
+      //     const element = updatedReq[key];
+
+      //   }
+      // }
+      if (role.role === 'ADMIN' || campaign.ownerId === user.id) {
+        return await new CampaignService().put(cId, r);
+      } else {
+        return new Campaign(
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          0,
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          'UNAUTHORIZE',
+          ['UNAUTHORIZE'],
+          'UNAUTHORIZE'
+        );
+      }
+    } catch (error) {
+      console.log(error);
       return new Campaign(
         'UNAUTHORIZE',
         'UNAUTHORIZE',

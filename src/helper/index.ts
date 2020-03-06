@@ -13,4 +13,18 @@ export class Helper {
     }
     console.log(`inside class ${self.name} -> calling ${methodName}`);
   }
+  static update(targetObject: any, obj: any) {
+    Object.keys(obj).forEach(key => {
+      if (undefined === obj[key] || null === obj[key]) {
+        delete targetObject[key];
+      } else if ('object' === typeof obj[key] && !Array.isArray(obj[key])) {
+        if (!('object' === typeof targetObject[key] && !Array.isArray(targetObject[key]))) {
+          targetObject[key] = {};
+        }
+        Helper.update(targetObject[key], obj[key]);
+      } else {
+        targetObject[key] = obj[key];
+      }
+    });
+  }
 }
