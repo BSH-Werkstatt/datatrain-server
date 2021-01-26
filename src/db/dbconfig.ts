@@ -12,5 +12,7 @@ export const DBConfig = {
   adminUser: process.env.DB_ADMIN_USER,
   adminPassword: process.env.DB_ADMIN_PASSWORD,
   awsKeyId: process.env.AWS_ACCESS_KEY_ID,
-  awsKeySecret: process.env.AWS_ACCESS_KEY_SECRET
+  awsKeySecret: process.env.AWS_ACCESS_KEY_SECRET,
+  awsSessionKey: process.env.AWS_SESSION_TOKEN,
+  awsBucketName: process.env.AWS_BUCKET_NAME
 };

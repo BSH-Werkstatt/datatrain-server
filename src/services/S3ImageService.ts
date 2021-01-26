@@ -10,7 +10,8 @@ export class S3ImageService {
   constructor() {
     AWS.config.update({
       accessKeyId: DBConfig.awsKeyId,
-      secretAccessKey: DBConfig.awsKeySecret
+      secretAccessKey: DBConfig.awsKeySecret,
+      sessionToken: DBConfig.awsSessionKey
     });
 
     this.s3 = new AWS.S3();
@@ -35,7 +36,7 @@ export class S3ImageService {
 
       // configuring parameters
       const params = {
-        Bucket: 'datatrain-static',
+        Bucket: DBConfig.awsBucketName,
         Body: fs.createReadStream(filePath),
         Key: 'images/' + name + '.jpg'
       };
@@ -64,7 +65,7 @@ export class S3ImageService {
   getImage(id: string) {
     return new Promise((resolve, reject) => {
       const params = {
-        Bucket: 'datatrain-static',
+        Bucket: DBConfig.awsBucketName,
         Key: 'images/' + id + '.jpg'
       };
 

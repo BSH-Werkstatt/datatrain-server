@@ -59,7 +59,7 @@ export class UserService {
           db.connection.close();
 
           if (!result) {
-            resolve(new User('ERROR_NOT_FOUND', 'ERROR_NOT_FOUND', 'ERROR_NOT_FOUND'));
+            reject(new Error('Check your e-mail information!'));
           } else {
             resolve(result);
           }

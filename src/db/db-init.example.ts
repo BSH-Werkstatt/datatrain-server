@@ -8,18 +8,18 @@ const adminUsers = [
   { name: 'iPraktikum', email: 'ipraktikum.bsh@tum.de' }
 ];
 const devUsers = [
-  { name: 'TL01', email: 'taylor.lei@tum.de' },
-  { name: 'EAO', email: 'emil.oldenburg@tum.de' },
-  { name: 'susi123', email: 'susanne.winkler@tum.de' },
-  { name: 'bsen', email: 'baris.sen@tum.de' },
-  { name: 'borjaSC', email: 'borja-sanchez.clemente@tum.de' }
+  { name: 'TL01', email: 'username@tum.de' },
+  { name: 'EAO', email: 'username1@tum.de' },
+  { name: 'susi123', email: 'username2@tum.de' },
+  { name: 'bosen', email: 'username3@tum.de' },
+  { name: 'borjSC', email: 'username4@tum.de' }
 ];
 const fridgeCampaignUsers = [
-  { name: 'johnny92', email: 'john.doe@bshg.de' },
-  { name: 'XxmoeplordxX', email: 'moep@bshg.de' },
-  { name: 'Jane Doe', email: 'jane.doe@bshg.de' },
-  { name: 'The Doctor', email: 'john.smith@bshg.de' },
-  { name: 'Mr.Lorem Ipsum', email: 'max.mustermann@bshg.de' }
+  { name: 'john92', email: 'username5@bshg.de' },
+  { name: 'XxmoeplordxX', email: 'username6@bshg.de' },
+  { name: 'Jane Doe', email: 'username7@bshg.de' },
+  { name: 'The Doctor', email: 'username8@bshg.de' },
+  { name: 'Mr.Lorem Ipsum', email: 'username9@bshg.de' }
 ];
 
 export default {
