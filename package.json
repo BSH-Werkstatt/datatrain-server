@@ -41,7 +41,7 @@
     "jpeg-autorotate": "^5.0.1",
     "method-override": "^3.0.0",
     "mongodb": "^3.2.7",
-    "mongoose": "^5.6.0",
+    "mongoose": "^5.7.5",
     "multer": "^1.4.1",
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.0",
